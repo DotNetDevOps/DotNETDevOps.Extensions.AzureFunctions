@@ -57,4 +57,7 @@ steps:
     nuGetFeedType: 'external'
     publishFeedCredentials: 'DotNET DevOps Myget'
     versioningScheme: 'off'
-
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'drop'
+    targetPath: '$(Build.ArtifactStagingDirectory)'
