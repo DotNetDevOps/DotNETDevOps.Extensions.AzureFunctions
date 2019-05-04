@@ -3,6 +3,7 @@
 # Add steps that run tests, create a NuGet package, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
+name: '$(date:yyyyMMdd)$(rev:.rr)'
 trigger:
 - master
 
@@ -13,5 +14,18 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- script: dotnet build --configuration $(buildConfiguration)
+- script: dotnet pack --configuration $(buildConfiguration) /src/**/*.csproj
   displayName: 'dotnet build $(buildConfiguration)'
+- task: UpdateNugetPackageVersionsTask@1
+  inputs:
+    PackageFolder: '$(Build.ArtifactStagingDirectory)'
+    PackageFeatureName: 'pre'
+- task: NuGetCommand@2
+  inputs:
+    command: 'push'
+    feedsToUse: 'select'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'DotNET DevOps Myget'
+    versioningScheme: 'off'
+
