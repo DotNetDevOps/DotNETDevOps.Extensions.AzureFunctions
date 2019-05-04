@@ -1,7 +1,7 @@
-# DotNETDevOps.Extensions.AzureFunctions
+# Extensions for Azure Functions to run AspNetCore applications.
 
-Extensions for Azure Functions to run AspNetCore applications.
------------------------------
+[![Master](https://dev.azure.com/dotnet-devops/DotNETDevOps/_apis/build/status/DotNetDevOps.DotNETDevOps.Extensions.AzureFunctions?branchName=master)](https://dev.azure.com/dotnet-devops/DotNETDevOps/_build/latest?definitionId=6&branchName=master)
+
 
 ## Usage
 
