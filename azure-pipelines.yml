@@ -1,0 +1,52 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+name: '$(date:yyyyMMdd)$(rev:.rr)'
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-2019'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+# .NET Core
+# Restore NuGet packages.
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+    #verbosityRestore: 'detailed' # Options: quiet, minimal, normal, detailed, diagnostic
+# .NET Core
+# Pack NuGet packages.
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'pack'
+    configuration: '$(buildConfiguration)'
+    packagesToPack: 'src/**/*.csproj' # Required when command == pack
+    packDirectory: '$(build.artifactStagingDirectory)' # Optional
+    #nobuild: false # Optional
+    #versioningScheme: 'off' # Options: off, byPrereleaseNumber, byEnvVar, byBuildNumber
+    #versionEnvVar: # Required when versioningScheme == byEnvVar
+    #majorVersion: '1' # Required when versioningScheme == byPrereleaseNumber
+    #minorVersion: '0' # Required when versioningScheme == byPrereleaseNumber
+    #patchVersion: '0' # Required when versioningScheme == byPrereleaseNumber
+    #buildProperties: # Optional
+    #verbosityPack: 'detailed' # Options: quiet, minimal, normal, detailed, diagnostic
+- task: UpdateNugetPackageVersionsTask@1
+  inputs:
+    PackageFolder: '$(build.artifactStagingDirectory)'
+    PackageFeatureName: 'pre'
+- task: NuGetCommand@2
+  inputs:
+    command: 'push'
+    feedsToUse: 'select'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'DotNET DevOps Myget'
+    versioningScheme: 'off'
+
