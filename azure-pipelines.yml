@@ -5,7 +5,15 @@
 
 name: '$(date:yyyyMMdd)$(rev:.rr)'
 trigger:
+  batch: true
+  branches:
+    include:
+    - master
+    - dev
+
+pr:
 - master
+- releases/*
 
 pool:
   vmImage: 'windows-2019'
@@ -49,4 +57,7 @@ steps:
     nuGetFeedType: 'external'
     publishFeedCredentials: 'DotNET DevOps Myget'
     versioningScheme: 'off'
-
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: 'drop'
+    targetPath: '$(Build.ArtifactStagingDirectory)'
