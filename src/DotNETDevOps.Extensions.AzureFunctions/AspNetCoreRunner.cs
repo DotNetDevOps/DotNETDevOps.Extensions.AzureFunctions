@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
-    public class AspNetCoreRunner<TWrapper> : IAspNetCoreRunner
+    public class AspNetCoreRunner<TWrapper> : IAspNetCoreRunner<TWrapper>
     {
         
         private ConcurrentDictionary<Type, IAspNetCoreServer> hosts = new ConcurrentDictionary<Type, IAspNetCoreServer>(); 

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
-    public interface IAspNetCoreRunner
+    public interface IAspNetCoreRunner<TWrapper>
     {
         Task<IActionResult> RunAsync<T>(Microsoft.AspNetCore.Http.HttpRequest req, Microsoft.Azure.WebJobs.ExecutionContext executionContext) where T : class;
     }
