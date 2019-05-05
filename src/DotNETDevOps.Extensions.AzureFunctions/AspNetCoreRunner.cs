@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
-    public class AspNetCoreRunner<TWrapper> : IAspNetCoreRunner<TWrapper>
+    public class AspNetCoreRunner<TWrapper> : IAspNetCoreRunner
     {
         
         private ConcurrentDictionary<Type, IAspNetCoreServer> hosts = new ConcurrentDictionary<Type, IAspNetCoreServer>(); 
@@ -18,7 +18,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             
             return Task.FromResult(
                 new AspNetCoreRunnerActionResult(
-                    hosts.GetOrAdd(typeof(T), (t) => new AspNetCoreRunnerServer<TWrapper,T>(req.HttpContext.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>(), executionContext))
+                    hosts.GetOrAdd(typeof(T), (t) => new AspNetCoreRunnerServer<TWrapper,T>(req.HttpContext.RequestServices, executionContext))
                     ) as IActionResult);
         }
 

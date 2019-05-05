@@ -6,6 +6,8 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
@@ -20,7 +22,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         public string Path { get; }
     }
 
-    public class AspNetCoreRunnerServer<TWrapper,T> : IAspNetCoreServer where T : class
+    public class AspNetCoreRunnerServer<TWrapper, T> : IAspNetCoreServer where T : class
     {
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
@@ -35,42 +37,44 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
         private TaskCompletionSource<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>> _applicationSource;
 
-       
-        
 
 
 
 
-        public AspNetCoreRunnerServer(Microsoft.AspNetCore.Hosting.IHostingEnvironment hostingEnvironment, Microsoft.Azure.WebJobs.ExecutionContext executionContext)
+
+
+        public AspNetCoreRunnerServer(IServiceProvider serviceProvider, Microsoft.Azure.WebJobs.ExecutionContext executionContext)
         {
- 
+            var logger = serviceProvider.GetRequiredService<ILogger<AspNetCoreRunnerServer<TWrapper, T>>>();
+
+            logger.LogInformation("Creating AspNetCoreRunnerServer");
+
             _applicationSource = new TaskCompletionSource<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>>();
 
             var builder = new WebHostBuilder();
 
 
-            if (hostingEnvironment.IsDevelopment())
+            if (serviceProvider.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().IsDevelopment())
             {
+                logger.LogInformation("Running in development mode");
                 var path = typeof(TWrapper).GetCustomAttribute<AspNetDevelopmentRelativePathAttribute>();
                 if (path != null)
                 {
-                    builder.UseContentRoot(Path.Combine(Directory.GetCurrentDirectory(), path.Path));
+                    var localPath = Path.Combine(Directory.GetCurrentDirectory(), path.Path);
+                    logger.LogInformation("setting content root: {path}", localPath);
+                    builder.UseContentRoot(localPath);
                 }
             }
             else
             {
+                logger.LogInformation("setting content root: {path}", executionContext.FunctionAppDirectory);
                 builder.UseContentRoot(executionContext.FunctionAppDirectory);
             }
             builder.ConfigureAppConfiguration((c, b) =>
             {
                 var a = Directory.GetCurrentDirectory();
 
-                //  b.SetBasePath(Directory.GetCurrentDirectory());
-
-              //  if (!c.HostingEnvironment.IsProduction()) { b.AddUserSecrets("93CD8C24-88BA-4141-9E65-7E78FBDB6D94"); }
-
-                //  b.AddInMemoryCollection(new[] { new KeyValuePair<string, string>(HostDefaults.EnvironmentKey, Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")) });
-
+                //TODO Make extensibility to configure webuilder configuration.
             })
                 .UseStartup<T>();
 
