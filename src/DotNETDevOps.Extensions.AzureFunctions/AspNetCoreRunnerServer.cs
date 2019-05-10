@@ -22,18 +22,19 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
         public string Path { get; }
     }
-    public class WebHostBuilderConfigurationBuilderAttribute : Attribute
+    public class WebHostBuilderAttribute : Attribute
     {
-        public WebHostBuilderConfigurationBuilderAttribute(Type type)
+        public WebHostBuilderAttribute(Type type)
         {
             Type = type;
         }
 
         public Type Type { get; }
     }
-    public interface IWebHostBuilderConfigurationBuilderExtension
+    public interface IWebHostBuilderExtension
     {
-        void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder builder);
+       
+        void ConfigureWebHostBuilder(WebHostBuilder builder);
     }
 
     public class AspNetCoreRunnerServer<TWrapper, T> : IAspNetCoreServer where T : class
@@ -85,14 +86,16 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 builder.UseContentRoot(executionContext.FunctionAppDirectory);
             }
 
-            var webhostconfiguration = typeof(TWrapper).GetCustomAttribute<WebHostBuilderConfigurationBuilderAttribute>();
+            var webhostconfiguration = typeof(TWrapper).GetCustomAttribute<WebHostBuilderAttribute>();
             if (webhostconfiguration != null)
             {
-                var configure = serviceProvider.GetService(webhostconfiguration.Type) as IWebHostBuilderConfigurationBuilderExtension;
+                var configure = serviceProvider.GetService(webhostconfiguration.Type) as IWebHostBuilderExtension;
                 if(configure != null)
                 {
-                    builder.ConfigureAppConfiguration(configure.ConfigureAppConfiguration);
+                    configure.ConfigureWebHostBuilder(builder);
+                   // builder.ConfigureAppConfiguration(configure.ConfigureAppConfiguration);
                 }
+                
             }
 
 
