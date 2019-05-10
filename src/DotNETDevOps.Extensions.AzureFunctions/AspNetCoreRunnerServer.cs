@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
@@ -20,6 +21,19 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         }
 
         public string Path { get; }
+    }
+    public class WebHostBuilderConfigurationBuilderAttribute : Attribute
+    {
+        public WebHostBuilderConfigurationBuilderAttribute(Type type)
+        {
+            Type = type;
+        }
+
+        public Type Type { get; }
+    }
+    public interface IWebHostBuilderConfigurationBuilderExtension
+    {
+        void ConfigureAppConfiguration(WebHostBuilderContext context, IConfigurationBuilder builder);
     }
 
     public class AspNetCoreRunnerServer<TWrapper, T> : IAspNetCoreServer where T : class
@@ -70,13 +84,19 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 logger.LogInformation("setting content root: {path}", executionContext.FunctionAppDirectory);
                 builder.UseContentRoot(executionContext.FunctionAppDirectory);
             }
-            builder.ConfigureAppConfiguration((c, b) =>
-            {
-                var a = Directory.GetCurrentDirectory();
 
-                //TODO Make extensibility to configure webuilder configuration.
-            })
-                .UseStartup<T>();
+            var webhostconfiguration = typeof(TWrapper).GetCustomAttribute<WebHostBuilderConfigurationBuilderAttribute>();
+            if (webhostconfiguration != null)
+            {
+                var configure = serviceProvider.GetService(webhostconfiguration.Type) as IWebHostBuilderConfigurationBuilderExtension;
+                if(configure != null)
+                {
+                    builder.ConfigureAppConfiguration(configure.ConfigureAppConfiguration);
+                }
+            }
+
+
+            builder.UseStartup<T>();
 
 
 
