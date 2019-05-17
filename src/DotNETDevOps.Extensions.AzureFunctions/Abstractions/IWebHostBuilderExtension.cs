@@ -6,6 +6,6 @@ namespace DotNETDevOps.Extensions.AzureFunctions
     public interface IWebHostBuilderExtension
     {
 
-        void ConfigureWebHostBuilder(WebHostBuilder builder);
+        void ConfigureWebHostBuilder(Microsoft.Azure.WebJobs.ExecutionContext executionContext, WebHostBuilder builder);
     }
 }

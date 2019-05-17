@@ -41,28 +41,15 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             _applicationSource = new TaskCompletionSource<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>>();
 
             var builder = new WebHostBuilder();
+           
 
             builder.ConfigureServices(services =>
             {
+                services.AddSingleton(executionContext);
                 services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
             });
 
-            if (serviceProvider.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().IsDevelopment())
-            {
-                logger.LogInformation("Running in development mode");
-                var path = typeof(TWrapper).GetCustomAttribute<AspNetDevelopmentRelativePathAttribute>();
-                if (path != null)
-                {
-                    var localPath = Path.Combine(Directory.GetCurrentDirectory(), path.Path);
-                    logger.LogInformation("setting content root: {path}", localPath);
-                    builder.UseContentRoot(localPath);
-                }
-            }
-            else
-            {
-                logger.LogInformation("setting content root: {path}", executionContext.FunctionAppDirectory);
-                builder.UseContentRoot(executionContext.FunctionAppDirectory);
-            }
+            builder.UseContentRoot(executionContext.FunctionAppDirectory);
 
             var webhostconfiguration = typeof(TWrapper).GetCustomAttribute<WebHostBuilderAttribute>();
             if (webhostconfiguration != null)
@@ -70,7 +57,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 var configure = serviceProvider.GetService(webhostconfiguration.Type) as IWebHostBuilderExtension;
                 if(configure != null)
                 {
-                    configure.ConfigureWebHostBuilder(builder);
+                    configure.ConfigureWebHostBuilder(executionContext,builder);
                    // builder.ConfigureAppConfiguration(configure.ConfigureAppConfiguration);
                 }
                 
