@@ -44,30 +44,25 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 if (type != null)
                 {
                     var clientType = Type.GetType("Microsoft.Azure.WebJobs.DurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                    var iClientType = Type.GetType("Microsoft.Azure.WebJobs.IDurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                     var extensionType = Type.GetType("Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskExtension, Microsoft.Azure.WebJobs.Extensions.DurableTask");
-                    
+
 
                     services.AddSingleton(type);
-                    services.AddSingleton(clientType,sp=>
+
+                    if (clientType!=null)
                     {
-                        var configurations = serviceProvider.GetServices<IExtensionConfigProvider>();
+                        RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, clientType, extensionType);
+                    }
+                    if (iClientType != null)
+                    {
+                        RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, iClientType, extensionType);
+                        
+                    }
 
-                        var durableTaskExtension = configurations.Where(t=>t.GetType()== extensionType).FirstOrDefault();
 
-                        var getclient = durableTaskExtension.GetType().GetMethod("GetClient", BindingFlags.NonPublic | BindingFlags.Instance);
-                        var orchestrationClientAttribute = Activator.CreateInstance(type);
-                        type.GetProperty("TaskHub").SetValue(orchestrationClientAttribute, aspNetCoreRunnerAttribute.TaskHub);
-                        type.GetProperty("ConnectionName").SetValue(orchestrationClientAttribute, aspNetCoreRunnerAttribute.ConnectionName);
-                       
 
-                        var client = getclient.Invoke(durableTaskExtension, new object[] { orchestrationClientAttribute });
 
-                        return client;
-                    });
-
-                   
-
-                   
                 }
 
             });
@@ -100,7 +95,25 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             });
         }
 
+        private static void RegisterDurableClient(AspNetCoreRunnerAttribute aspNetCoreRunnerAttribute, IServiceProvider serviceProvider, IServiceCollection services, Type type, Type clientType, Type extensionType)
+        {
+            services.AddSingleton(clientType, sp =>
+            {
+                var configurations = serviceProvider.GetServices<IExtensionConfigProvider>();
 
+                var durableTaskExtension = configurations.Where(t => t.GetType() == extensionType).FirstOrDefault();
+
+                var getclient = durableTaskExtension.GetType().GetMethod("GetClient", BindingFlags.NonPublic | BindingFlags.Instance);
+                var orchestrationClientAttribute = Activator.CreateInstance(type);
+                type.GetProperty("TaskHub").SetValue(orchestrationClientAttribute, aspNetCoreRunnerAttribute.TaskHub);
+                type.GetProperty("ConnectionName").SetValue(orchestrationClientAttribute, aspNetCoreRunnerAttribute.ConnectionName);
+
+
+                var client = getclient.Invoke(durableTaskExtension, new object[] { orchestrationClientAttribute });
+
+                return client;
+            });
+        }
 
         public Task<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>> GetApplicationAsync()
         {
