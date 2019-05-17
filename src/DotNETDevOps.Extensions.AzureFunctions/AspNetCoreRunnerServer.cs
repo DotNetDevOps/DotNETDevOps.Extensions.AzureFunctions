@@ -8,35 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
-    public class AspNetDevelopmentRelativePathAttribute : Attribute
-    {
-
-        public AspNetDevelopmentRelativePathAttribute(string path)
-        {
-            Path = path;
-        }
-
-        public string Path { get; }
-    }
-    public class WebHostBuilderAttribute : Attribute
-    {
-        public WebHostBuilderAttribute(Type type)
-        {
-            Type = type;
-        }
-
-        public Type Type { get; }
-    }
-    public interface IWebHostBuilderExtension
-    {
-       
-        void ConfigureWebHostBuilder(WebHostBuilder builder);
-    }
-
     public class AspNetCoreRunnerServer<TWrapper, T> : IAspNetCoreServer where T : class
     {
         public IFeatureCollection Features { get; } = new FeatureCollection();
@@ -68,6 +42,10 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             var builder = new WebHostBuilder();
 
+            builder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
+            });
 
             if (serviceProvider.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().IsDevelopment())
             {
