@@ -11,8 +11,12 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
+
     public class AspNetCoreRunnerServer<TWrapper, T> : IAspNetCoreServer where T : class
     {
+        private bool _disposed = false;
+        private IWebHost _host;
+
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
         public void Dispose()
@@ -41,12 +45,30 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             _applicationSource = new TaskCompletionSource<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>>();
 
             var builder = new WebHostBuilder();
+
+
            
 
             builder.ConfigureServices(services =>
             {
                 services.AddSingleton(executionContext);
                 services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
+
+                var type= Type.GetType("Microsoft.Azure.WebJobs.OrchestrationClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                if (type != null) {
+                    var clientType = Type.GetType("Microsoft.Azure.WebJobs.DurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+
+                    services.AddSingleton(type);
+                    services.AddSingleton(clientType);
+                    //services.add
+
+                    //var test = req.HttpContext.RequestServices.GetServices<IExtensionConfigProvider>();
+                    //var dur = test.OfType<DurableTaskExtension>().FirstOrDefault();
+                    //var getclient = dur.GetType().GetMethod("GetClient", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    //var client = getclient.Invoke(dur, new object[] { new OrchestrationClientAttribute() });
+                }
+
             });
 
             builder.UseContentRoot(executionContext.FunctionAppDirectory);
@@ -77,8 +99,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             });
         }
 
-        private bool _disposed = false;
-        private IWebHost _host;
+       
 
         public Task<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>> GetApplicationAsync()
         {
