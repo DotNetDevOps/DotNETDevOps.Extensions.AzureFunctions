@@ -59,7 +59,7 @@ stages:
 - stage: Publish
   jobs:
   - job: Build
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/dev'))
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
     pool:
       vmImage: 'windows-2019'
     
