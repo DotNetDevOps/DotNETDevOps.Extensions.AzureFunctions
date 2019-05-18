@@ -109,5 +109,5 @@ stages:
         feedsToUse: 'select'
         packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
         nuGetFeedType: 'external'
-        publishFeedCredentials: 'DotNET DevOps Myget'
+        publishFeedCredentials: 'Nuget'
         versioningScheme: 'off'
