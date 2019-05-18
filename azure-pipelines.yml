@@ -57,10 +57,11 @@ stages:
         targetPath: '$(Build.ArtifactStagingDirectory)'
 
 - stage: 'PublishCI'
+  dependsOn: 'Build'
+  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
-  - job: Build
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
-    dependsOn: 'Build'
+  - job: Build   
+
     pool:
       vmImage: 'windows-2019'
     
@@ -91,10 +92,11 @@ stages:
         versioningScheme: 'off'
 
 - stage: 'Release'
+  dependsOn: 'Build'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
-  - job: Build
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
-    dependsOn: 'Build'
+  - job: Build    
+
     pool:
       vmImage: 'windows-2019'
     
