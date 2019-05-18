@@ -26,8 +26,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             return Task.FromResult(new AspNetCoreRunner(this.serviceProvider,arg1,arg2) as IAspNetCoreRunner);
 
-         //    arg2.FunctionContext.MethodName
-         // return serviceProvider.GetService(typeof(IAspNetCoreRunner<>).MakeGenericType(typeof()))
+         
         }
     }
 }
