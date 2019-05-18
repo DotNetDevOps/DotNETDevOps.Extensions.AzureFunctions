@@ -51,7 +51,7 @@ stages:
         #buildProperties: # Optional
         #verbosityPack: 'detailed' # Options: quiet, minimal, normal, detailed, diagnostic
    
-   - task: PublishPipelineArtifact@0
+    - task: PublishPipelineArtifact@0
       inputs:
         artifactName: 'drop'
         targetPath: '$(Build.ArtifactStagingDirectory)'
@@ -62,7 +62,8 @@ stages:
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/dev'))
     pool:
       vmImage: 'windows-2019'
-
+    
+    steps:
     - task: UpdateNugetPackageVersionsTask@1
       inputs:
         PackageFolder: '$(build.artifactStagingDirectory)'
