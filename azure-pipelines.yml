@@ -56,7 +56,7 @@ stages:
         artifactName: 'drop'
         targetPath: '$(Build.ArtifactStagingDirectory)'
 
-- stage: Publish
+- stage: 'Publish Dev'
   jobs:
   - job: Build
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -64,6 +64,11 @@ stages:
       vmImage: 'windows-2019'
     
     steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        artifactName: 'drop'
+        downloadPath: '$(Build.ArtifactStagingDirectory)'
+
     - task: UpdateNugetPackageVersionsTask@1
       inputs:
         PackageFolder: '$(build.artifactStagingDirectory)'
@@ -71,8 +76,30 @@ stages:
            
     - task: PublishPipelineArtifact@0
       inputs:
-        artifactName: 'drop'
+        artifactName: 'drop-ci'
         targetPath: '$(Build.ArtifactStagingDirectory)'
+
+    - task: NuGetCommand@2
+      inputs:
+        command: 'push'
+        feedsToUse: 'select'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        nuGetFeedType: 'external'
+        publishFeedCredentials: 'DotNET DevOps Myget'
+        versioningScheme: 'off'
+
+- stage: 'Publish Master'
+  jobs:
+  - job: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    pool:
+      vmImage: 'windows-2019'
+    
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        artifactName: 'drop'
+        downloadPath: '$(Build.ArtifactStagingDirectory)'
 
     - task: NuGetCommand@2
       inputs:
