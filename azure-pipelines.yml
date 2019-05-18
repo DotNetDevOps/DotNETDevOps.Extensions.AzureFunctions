@@ -13,51 +13,105 @@ trigger:
 
 pr:
 - master
+- dev
 - releases/*
 
-pool:
-  vmImage: 'windows-2019'
 
-variables:
-  buildConfiguration: 'Release'
+stages:
+- stage: Build
+  jobs:
+  - job: Build
+    pool:
+      vmImage: 'windows-2019'
+    variables:
+      buildConfiguration: 'Release'
 
-steps:
-# .NET Core
-# Restore NuGet packages.
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-    #verbosityRestore: 'detailed' # Options: quiet, minimal, normal, detailed, diagnostic
-# .NET Core
-# Pack NuGet packages.
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'pack'
-    configuration: '$(buildConfiguration)'
-    packagesToPack: 'src/**/*.csproj' # Required when command == pack
-    packDirectory: '$(build.artifactStagingDirectory)' # Optional
-    #nobuild: false # Optional
-    #versioningScheme: 'off' # Options: off, byPrereleaseNumber, byEnvVar, byBuildNumber
-    #versionEnvVar: # Required when versioningScheme == byEnvVar
-    #majorVersion: '1' # Required when versioningScheme == byPrereleaseNumber
-    #minorVersion: '0' # Required when versioningScheme == byPrereleaseNumber
-    #patchVersion: '0' # Required when versioningScheme == byPrereleaseNumber
-    #buildProperties: # Optional
-    #verbosityPack: 'detailed' # Options: quiet, minimal, normal, detailed, diagnostic
-- task: UpdateNugetPackageVersionsTask@1
-  inputs:
-    PackageFolder: '$(build.artifactStagingDirectory)'
-    PackageFeatureName: 'pre'
-- task: NuGetCommand@2
-  inputs:
-    command: 'push'
-    feedsToUse: 'select'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    nuGetFeedType: 'external'
-    publishFeedCredentials: 'DotNET DevOps Myget'
-    versioningScheme: 'off'
-- task: PublishPipelineArtifact@0
-  inputs:
-    artifactName: 'drop'
-    targetPath: '$(Build.ArtifactStagingDirectory)'
+    steps:
+    # .NET Core
+    # Restore NuGet packages.
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+        #verbosityRestore: 'detailed' # Options: quiet, minimal, normal, detailed, diagnostic
+    # .NET Core
+    # Pack NuGet packages.
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'pack'
+        configuration: '$(buildConfiguration)'
+        packagesToPack: 'src/**/*.csproj' # Required when command == pack
+        packDirectory: '$(build.artifactStagingDirectory)' # Optional
+        #nobuild: false # Optional
+        #versioningScheme: 'off' # Options: off, byPrereleaseNumber, byEnvVar, byBuildNumber
+        #versionEnvVar: # Required when versioningScheme == byEnvVar
+        #majorVersion: '1' # Required when versioningScheme == byPrereleaseNumber
+        #minorVersion: '0' # Required when versioningScheme == byPrereleaseNumber
+        #patchVersion: '0' # Required when versioningScheme == byPrereleaseNumber
+        #buildProperties: # Optional
+        #verbosityPack: 'detailed' # Options: quiet, minimal, normal, detailed, diagnostic
+   
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'drop'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+
+- stage: 'PublishCI'
+  dependsOn: 'Build'
+  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: Build   
+
+    pool:
+      vmImage: 'windows-2019'
+    
+    steps:
+    - task: DownloadPipelineArtifact@1
+      inputs:
+        buildType: 'current'
+        artifactName: 'drop'
+        targetPath: '$(System.ArtifactsDirectory)'
+
+    - task: UpdateNugetPackageVersionsTask@1
+      inputs:
+        PackageFolder: '$(build.artifactStagingDirectory)'
+        PackageFeatureName: 'pre'
+           
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'drop-ci'
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+
+    - task: NuGetCommand@2
+      inputs:
+        command: 'push'
+        feedsToUse: 'select'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        nuGetFeedType: 'external'
+        publishFeedCredentials: 'DotNET DevOps Myget'
+        versioningScheme: 'off'
+
+- stage: 'Release'
+  dependsOn: 'Build'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: Build    
+
+    pool:
+      vmImage: 'windows-2019'
+    
+    steps:
+    - task: DownloadPipelineArtifact@1
+      inputs:
+        buildType: 'current'
+        artifactName: 'drop'
+        targetPath: '$(System.ArtifactsDirectory)'
+
+    - task: NuGetCommand@2
+      inputs:
+        command: 'push'
+        feedsToUse: 'select'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        nuGetFeedType: 'external'
+        publishFeedCredentials: 'Nuget'
+        versioningScheme: 'off'

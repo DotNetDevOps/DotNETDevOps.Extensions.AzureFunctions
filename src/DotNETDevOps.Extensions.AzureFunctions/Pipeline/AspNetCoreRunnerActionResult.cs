@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Features;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -17,8 +18,8 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         {
             context.HttpContext.Features.Set<IServiceProvidersFeature>(null);
 
-            var application = await this.server.GetApplicationAsync(); 
-
+            var application = await this.server.GetApplicationAsync();
+           
             await application.ProcessRequestAsync(new Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context() { HttpContext = context.HttpContext });
 
         }
