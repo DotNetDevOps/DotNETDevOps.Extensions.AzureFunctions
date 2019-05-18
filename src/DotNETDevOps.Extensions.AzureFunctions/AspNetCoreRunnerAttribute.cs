@@ -14,7 +14,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
         [AutoResolve]
         public string TaskHub { get; set; }
-        public Type WebBuilderExtension { get; set; }
+        
 
         public override int GetHashCode()
         {

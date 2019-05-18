@@ -6,16 +6,17 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
-
-    public class AspNetCoreWebHostStartUp<T> : IWebJobsStartup
-        where T : class,IWebHostBuilderExtension
+    
+    public class AspNetCoreWebHostStartUp<TWebHostBuilder,TStartup> : IWebJobsStartup
+        where TWebHostBuilder : class,IWebHostBuilderExtension<TStartup>
       
     {
         public void Configure(IWebJobsBuilder builder)
         {
-            builder.Services.AddTransient<T>();
+            builder.Services.AddTransient<IWebHostBuilderExtension<TStartup>,TWebHostBuilder>();
         }
     }
+
     internal class ExtensionStartup : IWebJobsStartup
     {
         public void Configure(IWebJobsBuilder builder)

@@ -76,7 +76,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             var webhostconfiguration = typeof(TWrapper).GetCustomAttribute<WebHostBuilderAttribute>();
             if (webhostconfiguration != null)
             {
-                var configure = serviceProvider.GetService(webhostconfiguration.Type) as IWebHostBuilderExtension;
+                var configure = serviceProvider.GetService(webhostconfiguration.Type) as IBuilderExtension;
                 if(configure != null)
                 {
                     configure.ConfigureWebHostBuilder(executionContext,builder);

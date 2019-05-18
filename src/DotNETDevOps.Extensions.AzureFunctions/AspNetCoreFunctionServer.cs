@@ -70,20 +70,14 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             builder.UseContentRoot(executionContext.FunctionAppDirectory);
 
-            
-            if (aspNetCoreRunnerAttribute.WebBuilderExtension != null)
+
+            var builderExtension = serviceProvider.GetService(typeof(IWebHostBuilderExtension<>).MakeGenericType(aspNetCoreRunnerAttribute.Startup)) as IBuilderExtension;
+
+            if (builderExtension != null)
             {
-                var configure = serviceProvider.GetService(aspNetCoreRunnerAttribute.WebBuilderExtension) as IWebHostBuilderExtension;
-
-                if (configure != null)
-                {
-                    configure.ConfigureWebHostBuilder(executionContext, builder);
-                    // builder.ConfigureAppConfiguration(configure.ConfigureAppConfiguration);
-                }
-                
-
+                builderExtension.ConfigureWebHostBuilder(executionContext, builder);
             }
-
+              
 
             builder.UseStartup(aspNetCoreRunnerAttribute.Startup);
 
