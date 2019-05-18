@@ -60,6 +60,7 @@ stages:
   jobs:
   - job: Build
     condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+    dependsOn: 'Build'
     pool:
       vmImage: 'windows-2019'
     
@@ -93,6 +94,7 @@ stages:
   jobs:
   - job: Build
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    dependsOn: 'Build'
     pool:
       vmImage: 'windows-2019'
     
