@@ -12,6 +12,7 @@ using System.Linq;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
+    
     public class AspNetCoreFunctionServer : IAspNetCoreServer
     {
         private bool _disposed = false;
@@ -73,11 +74,13 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             if (aspNetCoreRunnerAttribute.WebBuilderExtension != null)
             {
                 var configure = serviceProvider.GetService(aspNetCoreRunnerAttribute.WebBuilderExtension) as IWebHostBuilderExtension;
+
                 if (configure != null)
                 {
                     configure.ConfigureWebHostBuilder(executionContext, builder);
                     // builder.ConfigureAppConfiguration(configure.ConfigureAppConfiguration);
                 }
+                
 
             }
 
