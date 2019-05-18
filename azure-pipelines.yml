@@ -64,12 +64,11 @@ stages:
       vmImage: 'windows-2019'
     
     steps:
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadPipelineArtifact@1
       inputs:
         buildType: 'current'
-        downloadType: 'single'
         artifactName: 'drop'
-        downloadPath: '$(System.ArtifactsDirectory)'
+        targetPath: '$(System.ArtifactsDirectory)'
 
     - task: UpdateNugetPackageVersionsTask@1
       inputs:
@@ -98,10 +97,11 @@ stages:
       vmImage: 'windows-2019'
     
     steps:
-    - task: DownloadBuildArtifacts@0
+    - task: DownloadPipelineArtifact@1
       inputs:
+        buildType: 'current'
         artifactName: 'drop'
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
+        targetPath: '$(System.ArtifactsDirectory)'
 
     - task: NuGetCommand@2
       inputs:
