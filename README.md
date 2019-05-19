@@ -16,8 +16,7 @@
 | Branch | Status | myget |
 | ------ | ------ | ----- |
 | Master | [![Master](https://dev.azure.com/dotnet-devops/DotNETDevOps/_apis/build/status/DotNETDevOps.Extensions.AzureFunctions?branchName=master)](https://dev.azure.com/dotnet-devops/DotNETDevOps/_build/latest?definitionId=6&branchName=master) |  <a href="https://www.myget.org/feed/dotnet-devops/package/nuget/DotNETDevOps.Extensions.AzureFunctions"><img src="https://img.shields.io/myget/dotnet-devops/v/DotNETDevOps.Extensions.AzureFunctions.svg"></a>   |
-| Dev    | [![Build Status](https://dev.azure.com/dotnet-devops/DotNETDevOps/_apis/build/status/DotNETDevOps.Extensions.AzureFunctions?branchName=dev)](https://dev.azure.com/dotnet-devops/DotNETDevOps/_build/latest?definitionId=6&branchName=dev) | <a href="https://www.myget.org/feed/dotnet-devops/package/nuget/DotNETDevOps.Extensions.AzureFunctions"><img src="https://img.shields.io/myget/dotnet-devops/vpre/DotNETDevOps.Extensions.AzureFunctions.svg"></a>   
- |
+| Dev    | [![Build Status](https://dev.azure.com/dotnet-devops/DotNETDevOps/_apis/build/status/DotNETDevOps.Extensions.AzureFunctions?branchName=dev)](https://dev.azure.com/dotnet-devops/DotNETDevOps/_build/latest?definitionId=6&branchName=dev) | <a href="https://www.myget.org/feed/dotnet-devops/package/nuget/DotNETDevOps.Extensions.AzureFunctions"><img src="https://img.shields.io/myget/dotnet-devops/vpre/DotNETDevOps.Extensions.AzureFunctions.svg"></a> |
  
 
 
