@@ -1,7 +1,24 @@
-# Extensions for Azure Functions to run AspNetCore applications.
+<h1 align="center">
+  <br>
+  Extensions for Azure Functions to run AspNetCore applications
+  <br>
+</h1>
 
-[![Master](https://dev.azure.com/dotnet-devops/DotNETDevOps/_apis/build/status/DotNETDevOps.Extensions.AzureFunctions?branchName=master)](https://dev.azure.com/dotnet-devops/DotNETDevOps/_build/latest?definitionId=6&branchName=master)
-[![Build Status](https://dev.azure.com/dotnet-devops/DotNETDevOps/_apis/build/status/DotNETDevOps.Extensions.AzureFunctions?branchName=dev)](https://dev.azure.com/dotnet-devops/DotNETDevOps/_build/latest?definitionId=6&branchName=dev)
+> If you run into any inconsistencies, bugs or incompatibilities, kindly let us know and we'll do our best to address them.
+
+<p align="center">
+<a href="https://www.nuget.org/packages/DotNETDevOps.Extensions.AzureFunctions/"><img src="https://img.shields.io/nuget/v/DotNETDevOps.Extensions.AzureFunctions.svg?style=flat"></a>
+<a href="https://www.dotnetdevops.org"><img src="https://img.shields.io/badge/Web-dotnetdevops.org-orange.svg"></a>
+<a href="https://twitter.com/pksorensen"><img src="https://img.shields.io/badge/Twitter-%40pksorensen-blue.svg"></a>    
+</p>
+
+## Status
+| Branch | Status | myget |
+| ------ | ------ | ----- |
+| Master | [![Master](https://dev.azure.com/dotnet-devops/DotNETDevOps/_apis/build/status/DotNETDevOps.Extensions.AzureFunctions?branchName=master)](https://dev.azure.com/dotnet-devops/DotNETDevOps/_build/latest?definitionId=6&branchName=master) |  <a href="https://www.myget.org/feed/dotnet-devops/package/nuget/DotNETDevOps.Extensions.AzureFunctions"><img src="https://img.shields.io/myget/dotnet-devops/v/DotNETDevOps.Extensions.AzureFunctions.svg"></a>   |
+| Dev    | [![Build Status](https://dev.azure.com/dotnet-devops/DotNETDevOps/_apis/build/status/DotNETDevOps.Extensions.AzureFunctions?branchName=dev)](https://dev.azure.com/dotnet-devops/DotNETDevOps/_build/latest?definitionId=6&branchName=dev) | <a href="https://www.myget.org/feed/dotnet-devops/package/nuget/DotNETDevOps.Extensions.AzureFunctions"><img src="https://img.shields.io/myget/dotnet-devops/vpre/DotNETDevOps.Extensions.AzureFunctions.svg"></a> |
+ 
+
 
 ## Usage
 

@@ -10,6 +10,9 @@ trigger:
     include:
     - master
     - dev
+  paths:
+    exclude:
+    - README.md
 
 pr:
 - master
