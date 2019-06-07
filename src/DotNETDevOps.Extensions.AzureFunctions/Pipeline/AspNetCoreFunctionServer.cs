@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.WebJobs.Host.Config;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
@@ -69,7 +70,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             });
 
             builder.UseContentRoot(executionContext.FunctionAppDirectory);
-
+            builder.ConfigureAppConfiguration((c, cbuilder) => { cbuilder.AddConfiguration(serviceProvider.GetService<IConfiguration>()); });
 
             var builderExtension = serviceProvider.GetService(typeof(IWebHostBuilderExtension<>).MakeGenericType(aspNetCoreRunnerAttribute.Startup)) as IBuilderExtension;
 
