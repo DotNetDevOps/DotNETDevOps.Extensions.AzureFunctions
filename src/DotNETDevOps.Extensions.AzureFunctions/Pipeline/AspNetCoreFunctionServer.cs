@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Azure.WebJobs.Host.Config;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
@@ -70,7 +71,13 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             });
 
             builder.UseContentRoot(executionContext.FunctionAppDirectory);
-            builder.ConfigureAppConfiguration((c, cbuilder) => { cbuilder.AddConfiguration(serviceProvider.GetService<IConfiguration>()); });
+            builder.ConfigureAppConfiguration((c, cbuilder) => { cbuilder
+                .AddInMemoryCollection(new Dictionary<string, string> {
+                    ["ExecutionContext:FunctionName"] = executionContext.FunctionName,
+                    ["ExecutionContext:FunctionAppDirectory"] = executionContext.FunctionAppDirectory,
+                    ["ExecutionContext:FunctionDirectory"] = executionContext.FunctionDirectory
+                })
+                .AddConfiguration(serviceProvider.GetService<IConfiguration>()); });
 
             var builderExtension = serviceProvider.GetService(typeof(IWebHostBuilderExtension<>).MakeGenericType(aspNetCoreRunnerAttribute.Startup)) as IBuilderExtension;
 

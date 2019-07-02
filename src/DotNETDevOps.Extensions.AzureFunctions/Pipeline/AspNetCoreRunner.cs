@@ -22,7 +22,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             this.valueBindingContext = valueBindingContext;
         }
 
-        private static ConcurrentDictionary<AspNetCoreRunnerAttribute, IAspNetCoreServer> hosts = new ConcurrentDictionary<AspNetCoreRunnerAttribute, IAspNetCoreServer>();
+        private static ConcurrentDictionary<AspNetCoreRunnerAttribute, Lazy<IAspNetCoreServer>> hosts = new ConcurrentDictionary<AspNetCoreRunnerAttribute, Lazy<IAspNetCoreServer>>();
 
         
 
@@ -30,7 +30,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         { 
             return Task.FromResult(
                 new AspNetCoreRunnerActionResult(
-                    hosts.GetOrAdd(aspNetCoreRunnerAttribute, (t) => new AspNetCoreFunctionServer(executionContext, aspNetCoreRunnerAttribute,serviceProvider))
+                    hosts.GetOrAdd(aspNetCoreRunnerAttribute, (t)=>new Lazy<IAspNetCoreServer>( () => new AspNetCoreFunctionServer(executionContext, aspNetCoreRunnerAttribute,serviceProvider))).Value
                     ) as IActionResult);    
         }
 
