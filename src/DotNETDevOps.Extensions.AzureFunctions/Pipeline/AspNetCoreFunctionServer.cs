@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Host.Config;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using Microsoft.Extensions.Hosting;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
@@ -20,7 +21,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         private bool _disposed = false;
         private IWebHost _host;
 
-        private TaskCompletionSource<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>> _applicationSource;
+        private TaskCompletionSource<IHttpApplication<object>> _applicationSource;
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
@@ -34,66 +35,83 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             logger.LogInformation($"Creating {nameof(AspNetCoreFunctionServer)}");
 
-            _applicationSource = new TaskCompletionSource<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>>();
+              _applicationSource = new TaskCompletionSource<IHttpApplication<object>>();
 
-            var builder = new WebHostBuilder(); 
+            // var webhostBuilder = new GenericWebHostBuilder(builder);
+            var genericbuilder = Host.CreateDefaultBuilder().ConfigureWebHost(builder =>
+            {  // new WebHostBuilder(); 
 
-            builder.ConfigureServices(services =>
-            {
-                services.AddSingleton(executionContext);
-                services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
 
-                var type = Type.GetType("Microsoft.Azure.WebJobs.OrchestrationClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask");
-                if (type != null)
+
+              //  builder.ConfigureWebHostDefaults();
+
+                builder.ConfigureServices((hostContext, services) =>
                 {
-                    var clientType = Type.GetType("Microsoft.Azure.WebJobs.DurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
-                    var iClientType = Type.GetType("Microsoft.Azure.WebJobs.IDurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
-                    var extensionType = Type.GetType("Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskExtension, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                    services.AddSingleton(executionContext);
+                    services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
 
-
-                    services.AddSingleton(type);
-
-                    if (clientType!=null)
+                    var type = Type.GetType("Microsoft.Azure.WebJobs.OrchestrationClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                    if (type != null)
                     {
-                        RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, clientType, extensionType);
+                        var clientType = Type.GetType("Microsoft.Azure.WebJobs.DurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                        var iClientType = Type.GetType("Microsoft.Azure.WebJobs.IDurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                        var extensionType = Type.GetType("Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskExtension, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+
+
+                        services.AddSingleton(type);
+
+                        if (clientType != null)
+                        {
+                            RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, clientType, extensionType);
+                        }
+                        if (iClientType != null)
+                        {
+                            RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, iClientType, extensionType);
+
+                        }
+
+
+
+
                     }
-                    if (iClientType != null)
-                    {
-                        RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, iClientType, extensionType);
-                        
-                    }
 
+                });
 
+                builder.UseContentRoot(executionContext.FunctionAppDirectory);
+                builder.ConfigureAppConfiguration((c, cbuilder) =>
+                {
+                    cbuilder
+.AddInMemoryCollection(new Dictionary<string, string>
+{
+    ["ExecutionContext:FunctionName"] = executionContext.FunctionName,
+    ["ExecutionContext:FunctionAppDirectory"] = executionContext.FunctionAppDirectory,
+    ["ExecutionContext:FunctionDirectory"] = executionContext.FunctionDirectory
+})
+.AddConfiguration(serviceProvider.GetService<IConfiguration>());
+                });
 
+                var builderExtension = serviceProvider.GetService(typeof(IWebHostBuilderExtension<>).MakeGenericType(aspNetCoreRunnerAttribute.Startup)) as IBuilderExtension;
 
+                if (builderExtension != null)
+                {
+                    builderExtension.ConfigureWebHostBuilder(executionContext, builder);
                 }
 
+
+                builder.UseStartup(aspNetCoreRunnerAttribute.Startup);
+
+
+
+            builder.UseServer(this);
+
+                //builder.Build().StartAsync().ContinueWith(task =>
+                //{
+                //    if (task.IsFaulted)
+                //        _applicationSource.SetException(task.Exception);
+                //});
             });
 
-            builder.UseContentRoot(executionContext.FunctionAppDirectory);
-            builder.ConfigureAppConfiguration((c, cbuilder) => { cbuilder
-                .AddInMemoryCollection(new Dictionary<string, string> {
-                    ["ExecutionContext:FunctionName"] = executionContext.FunctionName,
-                    ["ExecutionContext:FunctionAppDirectory"] = executionContext.FunctionAppDirectory,
-                    ["ExecutionContext:FunctionDirectory"] = executionContext.FunctionDirectory
-                })
-                .AddConfiguration(serviceProvider.GetService<IConfiguration>()); });
-
-            var builderExtension = serviceProvider.GetService(typeof(IWebHostBuilderExtension<>).MakeGenericType(aspNetCoreRunnerAttribute.Startup)) as IBuilderExtension;
-
-            if (builderExtension != null)
-            {
-                builderExtension.ConfigureWebHostBuilder(executionContext, builder);
-            }
-              
-
-            builder.UseStartup(aspNetCoreRunnerAttribute.Startup);
-
-
-
-            var _host = builder.UseServer(this);
-
-            builder.Build().StartAsync().ContinueWith(task =>
+            genericbuilder.Build().StartAsync().ContinueWith(task =>
             {
                 if (task.IsFaulted)
                     _applicationSource.SetException(task.Exception);
@@ -120,7 +138,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             });
         }
 
-        public Task<IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>> GetApplicationAsync()
+        public Task<IHttpApplication<object>> GetApplicationAsync()
         {
             return _applicationSource.Task;
 
@@ -128,7 +146,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         }
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
-            this._applicationSource.SetResult((IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>)application);
+            this._applicationSource.SetResult((IHttpApplication<object>)application);
 
             return Task.CompletedTask;
         }

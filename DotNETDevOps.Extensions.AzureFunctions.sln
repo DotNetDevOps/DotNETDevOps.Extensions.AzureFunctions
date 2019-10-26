@@ -3,13 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28809.33
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNETDevOps.Extensions.AzureFunctions", "src\DotNETDevOps.Extensions.AzureFunctions\DotNETDevOps.Extensions.AzureFunctions.csproj", "{F4DBD722-35F4-4AA0-A99B-51C6B1673B1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNETDevOps.Extensions.AzureFunctions", "src\DotNETDevOps.Extensions.AzureFunctions\DotNETDevOps.Extensions.AzureFunctions.csproj", "{F4DBD722-35F4-4AA0-A99B-51C6B1673B1A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4E19C70B-AEFB-435E-8F25-127734250E2D}"
 	ProjectSection(SolutionItems) = preProject
 		azure-pipelines.yml = azure-pipelines.yml
+		global.json = global.json
 		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{77A1D278-BFC0-4A63-A846-9EABEC258533}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCore30Simple", "samples\AspNetCore30Simple\AspNetCore30Simple.csproj", "{48321920-FA63-451A-8594-22108012A19B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCore30SimplePlus", "samples\AspNetCore30SimplePlus\AspNetCore30SimplePlus.csproj", "{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +28,21 @@ Global
 		{F4DBD722-35F4-4AA0-A99B-51C6B1673B1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4DBD722-35F4-4AA0-A99B-51C6B1673B1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4DBD722-35F4-4AA0-A99B-51C6B1673B1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48321920-FA63-451A-8594-22108012A19B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48321920-FA63-451A-8594-22108012A19B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48321920-FA63-451A-8594-22108012A19B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48321920-FA63-451A-8594-22108012A19B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{48321920-FA63-451A-8594-22108012A19B} = {77A1D278-BFC0-4A63-A846-9EABEC258533}
+		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F} = {77A1D278-BFC0-4A63-A846-9EABEC258533}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {91998C0D-E3F1-4C90-8F3C-763A0325C7F1}

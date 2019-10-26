@@ -20,7 +20,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             var application = await this.server.GetApplicationAsync();
            
-            await application.ProcessRequestAsync(new Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context() { HttpContext = context.HttpContext });
+            await application.ProcessRequestAsync(context);
 
         }
 
