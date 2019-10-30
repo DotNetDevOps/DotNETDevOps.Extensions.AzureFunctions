@@ -49,8 +49,8 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                     var clientType = Type.GetType("Microsoft.Azure.WebJobs.DurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                     var iClientType = Type.GetType("Microsoft.Azure.WebJobs.IDurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                     var extensionType = Type.GetType("Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskExtension, Microsoft.Azure.WebJobs.Extensions.DurableTask");
-
-
+                    var IDurableEntityClientType = Type.GetType("Microsoft.Azure.WebJobs.IDurableEntityClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                    var IDurableClientType =  Type.GetType("Microsoft.Azure.WebJobs.IDurableClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                     services.AddSingleton(type);
 
                     if (clientType!=null)
@@ -62,8 +62,17 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                         RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, iClientType, extensionType);
                         
                     }
+                    if (IDurableEntityClientType != null)
+                    {
+                        RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, IDurableEntityClientType, extensionType);
 
+                    }
 
+                    if (IDurableClientType != null)
+                    {
+                        RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, IDurableClientType, extensionType);
+
+                    }
 
 
                 }
