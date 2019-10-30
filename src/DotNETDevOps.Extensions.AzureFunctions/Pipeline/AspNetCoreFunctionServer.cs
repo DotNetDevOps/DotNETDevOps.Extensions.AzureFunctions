@@ -43,7 +43,8 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 services.AddSingleton(executionContext);
                 services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
 
-                var type = Type.GetType("Microsoft.Azure.WebJobs.OrchestrationClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                var type = Type.GetType("Microsoft.Azure.WebJobs.OrchestrationClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask") ??
+                    Type.GetType("Microsoft.Azure.WebJobs.DurableClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                 if (type != null)
                 {
                     var clientType = Type.GetType("Microsoft.Azure.WebJobs.DurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
