@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Host.Config;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using Microsoft.Azure.WebJobs;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
@@ -38,8 +39,16 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             var builder = new WebHostBuilder(); 
 
+            
             builder.ConfigureServices(services =>
             {
+                var tctype = Type.GetType("Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration, Microsoft.ApplicationInsights");
+                if (tctype!=null) {
+                    var tc = serviceProvider.GetService(tctype);
+                    if(tc!=null)
+                    services.AddSingleton(tc);
+                }
+              
                 services.AddSingleton(executionContext);
                 services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
 
@@ -93,7 +102,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             if (builderExtension != null)
             {
-                builderExtension.ConfigureWebHostBuilder(executionContext, builder);
+                builderExtension.ConfigureWebHostBuilder(executionContext, builder, serviceProvider);
             }
               
 
