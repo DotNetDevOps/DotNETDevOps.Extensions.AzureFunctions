@@ -8,6 +8,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Events;
 using System;
 
 namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
@@ -37,8 +38,10 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 
             builder.UseSerilog((context, configuration) =>
             { 
-                configuration.WriteTo
-                    .ApplicationInsights(serviceProvider.GetService<TelemetryConfiguration>(), TelemetryConverter.Traces);
+                configuration
+                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                    .WriteTo
+                        .ApplicationInsights(serviceProvider.GetService<TelemetryConfiguration>(), TelemetryConverter.Traces);
             });
             
 
