@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNETDevOps.Extensions.AzureFunctions;
 using FunctionApp6;
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.AspNetCore;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -19,7 +22,9 @@ using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
+using Microsoft.Extensions.Options;
+using Serilog;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 [assembly: WebJobsStartup(typeof(WebJobStartup))]
 
@@ -58,13 +63,23 @@ namespace FunctionApp6
         //https://github.com/Azure/azure-functions-host/issues/3741
         public void Configure(IWebJobsBuilder builder)
         {
-            builder.AddDependencyTelemetrySamplingProcessor();
+            //  builder.AddDependencyTelemetrySamplingProcessor();
+          
+            
+            //builder.Services.AddSingleton<ITelemetryModule>(provider =>
+            //{
+            //    var options = provider.GetRequiredService<IOptions<ApplicationInsightsServiceOptions>>().Value;
+            //    var appIdProvider = provider.GetService<IApplicationIdProvider>();
 
+
+            //    return new RequestTrackingTelemetryModule(appIdProvider);
+
+            //});
 
 
 
             builder.Services.AddSingleton<IWebHostBuilderExtension<Startup>, WebBuilderExtension>();
-            builder.Services.AddTransient<ITelemetryProcessor, AggressivelySampleFastRequests>();
+           // builder.Services.AddTransient<ITelemetryProcessor, AggressivelySampleFastRequests>();
         }
     }
 
@@ -75,7 +90,19 @@ namespace FunctionApp6
         public void ConfigureWebHostBuilder(ExecutionContext executionContext, WebHostBuilder builder, IServiceProvider serviceProvider)
         {
 
-            
+            builder.UseSerilog((context,configuration)=>
+            {
+
+                configuration.WriteTo
+                    .ApplicationInsights(serviceProvider.GetService<TelemetryConfiguration>(), TelemetryConverter.Traces);
+            });
+            //var config = serviceProvider.GetService<TelemetryConfiguration>();
+            //var modules = serviceProvider.GetService<IEnumerable<ITelemetryModule>>();
+            //foreach (var module in modules)
+            //{
+            //    module.Initialize(config);
+            //}
+
             builder.ConfigureServices(collection =>
             {
 
@@ -185,6 +212,14 @@ namespace FunctionApp6
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
         }
     }
+    public class test : IApplicationIdProvider
+    {
+        public bool TryGetApplicationId(string instrumentationKey, out string applicationId)
+        {
+            applicationId = "adsad";
+            return true;
+        }
+    }
     public class Startup
     {
         private readonly IConfiguration configuration;
@@ -197,17 +232,31 @@ namespace FunctionApp6
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddApplicationInsightsTelemetry();
+            //    services.AddApplicationInsightsTelemetry();
+
+             
         }
 
         public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env)
         {
             var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
-            config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastRequests(next));
-            config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
-            config.TelemetryProcessorChainBuilder.Build();
+            app.UseSerilogRequestLogging(); // <-- Add this line
+            //config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastRequests(next));
+            //config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
+            //config.TelemetryProcessorChainBuilder.Build();
 
-            app.Run(ctx => ctx.Response.WriteAsync("Hello world"));
+            app.Map("/api/test", builderinner => {
+                builderinner.Use((ctx,next) => {
+                    var a = ctx.RequestServices.GetService<TelemetryConfiguration>();
+                    throw new Exception("A");
+                
+                });
+            });
+            app.Run(async ctx =>
+            {
+                ctx.Response.WriteAsync("Hello world");
+                
+            });
         
         }
         

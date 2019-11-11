@@ -46,7 +46,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 if (tctype!=null) {
                     var tc = serviceProvider.GetService(tctype);
                     if(tc!=null)
-                    services.AddSingleton(tc);
+                    services.AddSingleton(tctype, tc);
                 }
               
                 services.AddSingleton(executionContext);
