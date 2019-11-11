@@ -88,7 +88,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 }
 
             });
-
+     
             builder.UseContentRoot(executionContext.FunctionAppDirectory);
             builder.ConfigureAppConfiguration((c, cbuilder) => { cbuilder
                 .AddInMemoryCollection(new Dictionary<string, string> {
@@ -105,7 +105,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 builderExtension.ConfigureWebHostBuilder(executionContext, builder, serviceProvider);
             }
               
-
+          
             builder.UseStartup(aspNetCoreRunnerAttribute.Startup);
 
 

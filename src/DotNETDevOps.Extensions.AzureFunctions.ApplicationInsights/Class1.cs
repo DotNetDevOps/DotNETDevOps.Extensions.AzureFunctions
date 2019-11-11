@@ -20,6 +20,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 
             return app =>
             {
+                app.AddFastAndDependencySampler();
                 app.UseSerilogRequestLogging();
                 next(app);
             };
@@ -135,9 +136,19 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 
 
             }
+            if(item is TraceTelemetry trace && trace.Properties.ContainsKey("SourceContext") && trace.Properties["SourceContext"] ==K)
+            {
+                var duration = double.Parse(trace.Properties["Elapsed"]);
+                if (duration < 500)
+                {
+                    this.samplingProcessor.Process(item);
+                    return;
+                }
+            }
 
             // Send the item to the next TelemetryProcessor
             _next.Process(item);
         }
+        private const string K = "Serilog.AspNetCore.RequestLoggingMiddleware";
     }
 }
