@@ -29,7 +29,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
     {
         public void Configure(IWebJobsBuilder builder)
         {
-            builder.Services.AddSingleton<IStartupFilter, StartupFilter>();
+           
             builder.Services.AddSingleton<IWebHostBuilderExtension<TStartup>, SerilogTracesExtension<TStartup>>();
         }
 
@@ -43,8 +43,11 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
                     .WriteTo
                         .ApplicationInsights(serviceProvider.GetService<TelemetryConfiguration>(), TelemetryConverter.Traces);
             });
-            
 
+            builder.ConfigureServices(services =>
+            {
+               services.AddSingleton<IStartupFilter, StartupFilter>();
+            });
 
         }
     }
