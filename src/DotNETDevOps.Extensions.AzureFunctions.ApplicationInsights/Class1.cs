@@ -3,11 +3,49 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using System;
 
 namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 {
+    internal class StartupFilter : IStartupFilter
+    {
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+        {
+
+            return app =>
+            {
+                app.UseSerilogRequestLogging();
+                next(app);
+            };
+        }
+    }
+    public class SerilogTracesExtension<TStartup> : IWebHostBuilderExtension<TStartup>, IWebJobsStartup
+    {
+        public void Configure(IWebJobsBuilder builder)
+        {
+            builder.Services.AddSingleton<IStartupFilter, StartupFilter>();
+            builder.Services.AddSingleton<IWebHostBuilderExtension<TStartup>, SerilogTracesExtension<TStartup>>();
+        }
+
+        public void ConfigureWebHostBuilder(ExecutionContext executionContext, WebHostBuilder builder, IServiceProvider serviceProvider)
+        {
+
+            builder.UseSerilog((context, configuration) =>
+            { 
+                configuration.WriteTo
+                    .ApplicationInsights(serviceProvider.GetService<TelemetryConfiguration>(), TelemetryConverter.Traces);
+            });
+            
+
+
+        }
+    }
+
     public static class ApplicationInsightsExtensions
     {
         public static IApplicationBuilder AddFastAndDependencySampler(this IApplicationBuilder app)
