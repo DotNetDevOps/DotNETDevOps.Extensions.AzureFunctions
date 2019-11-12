@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{B298
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore22AppInsights", "samples\AspNetCore22AppInsights\AspNetCore22AppInsights.csproj", "{A3C9A7E3-DC8B-4205-9FB5-FEA486FC4CB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights", "src\DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights\DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights.csproj", "{3DC38CDC-80D1-484A-AA95-89157EC062CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNETDevOps.Extensions.AzureFunctions.Serilog", "src\DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights\DotNETDevOps.Extensions.AzureFunctions.Serilog.csproj", "{3DC38CDC-80D1-484A-AA95-89157EC062CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

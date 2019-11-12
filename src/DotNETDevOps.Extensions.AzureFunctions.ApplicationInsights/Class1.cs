@@ -38,11 +38,23 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
         {
 
             builder.UseSerilog((context, configuration) =>
-            { 
+            {
                 configuration
-                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                    .WriteTo
+                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning);
+
+                var telemetryConfig = serviceProvider.GetService<TelemetryConfiguration>();
+
+                if (telemetryConfig != null)
+                {
+                    configuration.WriteTo
                         .ApplicationInsights(serviceProvider.GetService<TelemetryConfiguration>(), TelemetryConverter.Traces);
+                }
+
+                if (!context.HostingEnvironment.IsProduction())
+                {
+                    configuration.WriteTo.Console();
+                }
+
             });
 
             builder.ConfigureServices(services =>
@@ -59,9 +71,12 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
         {
             
             var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
-            config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastRequests(next));
-            config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
-            config.TelemetryProcessorChainBuilder.Build();
+            if (config != null)
+            {
+                config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastRequests(next));
+                config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
+                config.TelemetryProcessorChainBuilder.Build();
+            }
 
             return app;
         }
