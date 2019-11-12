@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore22AppInsights", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNETDevOps.Extensions.AzureFunctions.Serilog", "src\DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights\DotNETDevOps.Extensions.AzureFunctions.Serilog.csproj", "{3DC38CDC-80D1-484A-AA95-89157EC062CD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetDevOps.Extensions.KeyVault", "src\DotNetDevOps.Extensions.KeyVault\DotNetDevOps.Extensions.KeyVault.csproj", "{26D140B7-00CC-488A-B6C1-61C03EA89275}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{3DC38CDC-80D1-484A-AA95-89157EC062CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DC38CDC-80D1-484A-AA95-89157EC062CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DC38CDC-80D1-484A-AA95-89157EC062CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26D140B7-00CC-488A-B6C1-61C03EA89275}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26D140B7-00CC-488A-B6C1-61C03EA89275}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26D140B7-00CC-488A-B6C1-61C03EA89275}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26D140B7-00CC-488A-B6C1-61C03EA89275}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
