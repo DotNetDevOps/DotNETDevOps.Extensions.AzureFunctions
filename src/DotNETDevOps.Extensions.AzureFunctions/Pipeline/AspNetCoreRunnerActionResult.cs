@@ -18,19 +18,11 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
         public async Task ExecuteResultAsync(ActionContext context)
         {
-            context.HttpContext.Features.Set<IServiceProvidersFeature>(null);
-
             var application = await this.server.GetApplicationAsync();
 
-            var CreateContext = application.GetType().GetMethod("CreateContext");
-            var appContext = CreateContext.Invoke(application,new object[] { context.HttpContext.Features }); 
-            var method = application.GetType().GetMethod("ProcessRequestAsync"); 
-            var task = method.Invoke(application, new[] { appContext });
-          
-            if(task is Task tasktask)
-            {
-                await tasktask;
-            }
+            await application.ProcessRequestAsync(context);
+
+           
            
           //  await application.ProcessRequestAsync(context.HttpContext);
 

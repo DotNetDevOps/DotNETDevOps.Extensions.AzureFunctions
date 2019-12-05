@@ -12,16 +12,44 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
-    
+    public class ApplicationWrapper<TContext> : IApplication
+    {
+        private IHttpApplication<TContext> application;
+        private readonly MethodInfo CreateContextMethod;
+        private readonly MethodInfo ProcessRequestAsyncMethod;
+
+        public ApplicationWrapper(IHttpApplication<TContext> application)
+        {
+            this.application = application;
+            CreateContextMethod = application.GetType().GetMethod("CreateContext");
+            ProcessRequestAsyncMethod = application.GetType().GetMethod("ProcessRequestAsync");
+        }
+
+        public Task ProcessRequestAsync(ActionContext context)
+        {
+            context.HttpContext.Features.Set<IServiceProvidersFeature>(null);
+            var parameters = new object[1] { context.HttpContext.Features };
+            parameters[0] = CreateContextMethod.Invoke(application, parameters);  
+            
+            var task = ProcessRequestAsyncMethod.Invoke(application, parameters);
+
+            if (task is Task tasktask)
+            {
+                return tasktask;
+            }
+            throw new NotImplementedException();
+        }
+    }
     public class AspNetCoreFunctionServer : IAspNetCoreServer
     {
         private bool _disposed = false;
         private IWebHost _host;
 
-        private TaskCompletionSource<object> _applicationSource;
+        private TaskCompletionSource<IApplication> _applicationSource;
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
@@ -35,7 +63,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             logger.LogInformation($"Creating {nameof(AspNetCoreFunctionServer)}");
 
-              _applicationSource = new TaskCompletionSource<object>();
+              _applicationSource = new TaskCompletionSource<IApplication>();
 
             // var webhostBuilder = new GenericWebHostBuilder(builder);
             var genericbuilder = Host.CreateDefaultBuilder().ConfigureWebHost(builder =>
@@ -138,7 +166,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             });
         }
 
-        public Task<object> GetApplicationAsync()
+        public Task<IApplication> GetApplicationAsync()
         {
            return _applicationSource.Task;
            
@@ -147,7 +175,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         }
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
-            this._applicationSource.SetResult(application);
+            this._applicationSource.SetResult(new ApplicationWrapper<TContext>( application));
 
             return Task.CompletedTask;
         }
