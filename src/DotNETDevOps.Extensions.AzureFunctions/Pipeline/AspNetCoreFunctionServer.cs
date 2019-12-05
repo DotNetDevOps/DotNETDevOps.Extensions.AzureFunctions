@@ -21,7 +21,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         private bool _disposed = false;
         private IWebHost _host;
 
-        private TaskCompletionSource<IHttpApplication<object>> _applicationSource;
+        private TaskCompletionSource<object> _applicationSource;
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
@@ -35,7 +35,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             logger.LogInformation($"Creating {nameof(AspNetCoreFunctionServer)}");
 
-              _applicationSource = new TaskCompletionSource<IHttpApplication<object>>();
+              _applicationSource = new TaskCompletionSource<object>();
 
             // var webhostBuilder = new GenericWebHostBuilder(builder);
             var genericbuilder = Host.CreateDefaultBuilder().ConfigureWebHost(builder =>
@@ -138,15 +138,16 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             });
         }
 
-        public Task<IHttpApplication<object>> GetApplicationAsync()
+        public Task<object> GetApplicationAsync()
         {
-            return _applicationSource.Task;
+           return _applicationSource.Task;
+           
 
 
         }
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
-            this._applicationSource.SetResult((IHttpApplication<object>)application);
+            this._applicationSource.SetResult(application);
 
             return Task.CompletedTask;
         }
@@ -164,5 +165,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                 _host.Dispose();
             }
         }
+
+         
     }
 }

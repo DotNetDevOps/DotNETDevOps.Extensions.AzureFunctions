@@ -5,6 +5,6 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 {
     public interface IAspNetCoreServer : IServer { 
 
-        Task<IHttpApplication<object>> GetApplicationAsync();
+        Task<object> GetApplicationAsync();
     }
 }

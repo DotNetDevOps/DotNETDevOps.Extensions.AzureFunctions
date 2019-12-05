@@ -11,11 +11,19 @@ using Microsoft.AspNetCore.Builder;
 using AspNetCore30SimplePlus;
 using DotNETDevOps.Extensions.AzureFunctions;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AspNetCore30SimplePlus
 {
     public class Startup
     {
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddRouting();
+            services.AddHealthChecks();
+            services.AddControllers();
+        }
+
         public void Configure(IApplicationBuilder app)
         {
             app.UseRouting();
@@ -36,6 +44,8 @@ namespace AspNetCore30SimplePlus
 
 
             });
+
+            app.Run(r => r.Response.WriteAsync("HELLO WORLD"));
         }
     }
     public class ServerlessAspNetCore
