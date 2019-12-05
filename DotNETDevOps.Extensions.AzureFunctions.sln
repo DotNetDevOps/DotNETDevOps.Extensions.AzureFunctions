@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCore30Simple", "sampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCore30SimplePlus", "samples\AspNetCore30SimplePlus\AspNetCore30SimplePlus.csproj", "{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNetCore31SimplePlus", "samples\AspNetCore31SimplePlus\AspNetCore31SimplePlus.csproj", "{0EF1EF88-8611-4232-AD52-F6A71513F59E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,10 @@ Global
 		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EF1EF88-8611-4232-AD52-F6A71513F59E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EF1EF88-8611-4232-AD52-F6A71513F59E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EF1EF88-8611-4232-AD52-F6A71513F59E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EF1EF88-8611-4232-AD52-F6A71513F59E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,6 +49,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{48321920-FA63-451A-8594-22108012A19B} = {77A1D278-BFC0-4A63-A846-9EABEC258533}
 		{C3DF3969-7E78-4A0E-BF00-CC29F9987D3F} = {77A1D278-BFC0-4A63-A846-9EABEC258533}
+		{0EF1EF88-8611-4232-AD52-F6A71513F59E} = {77A1D278-BFC0-4A63-A846-9EABEC258533}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {91998C0D-E3F1-4C90-8F3C-763A0325C7F1}
