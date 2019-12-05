@@ -139,6 +139,24 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 
         public void Process(ITelemetry item)
         {
+            if (item is TraceTelemetry trace && trace.Properties.ContainsKey("SourceContext") && trace.Properties["SourceContext"] == RequestLoggingMiddleware)
+            {
+                //HMM could i change it to a request?
+                //https://github.com/microsoft/ApplicationInsights-aspnetcore/blob/a135f1f7d9da7beb11f9bcf20a30f7e779b739f2/NETCORE/src/Microsoft.ApplicationInsights.AspNetCore/DiagnosticListeners/Implementation/HostingDiagnosticListener.cs#L727
+
+                //https://github.com/serilog/serilog-aspnetcore/issues/52
+                //https://github.com/serilog/serilog-aspnetcore/blob/dev/src/Serilog.AspNetCore/AspNetCore/RequestLoggingMiddleware.cs
+                // Serilog middleware is way simple to aspnet core AI, so whats the catch.
+                // item = new RequestTelemetry()
+
+                var duration = double.Parse(trace.Properties["Elapsed"]);
+                if (duration < 500)
+                {
+                    this.samplingProcessor.Process(item);
+                    return;
+                }
+            }
+
             if (item is RequestTelemetry request)
             {
                 if (request.Duration < TimeSpan.FromMilliseconds(500) || request.ResponseCode == "200")
@@ -151,19 +169,11 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 
 
             }
-            if(item is TraceTelemetry trace && trace.Properties.ContainsKey("SourceContext") && trace.Properties["SourceContext"] ==K)
-            {
-                var duration = double.Parse(trace.Properties["Elapsed"]);
-                if (duration < 500)
-                {
-                    this.samplingProcessor.Process(item);
-                    return;
-                }
-            }
+            
 
             // Send the item to the next TelemetryProcessor
             _next.Process(item);
         }
-        private const string K = "Serilog.AspNetCore.RequestLoggingMiddleware";
+        private const string RequestLoggingMiddleware = "Serilog.AspNetCore.RequestLoggingMiddleware";
     }
 }

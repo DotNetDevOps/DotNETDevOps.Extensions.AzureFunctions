@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNETDevOps.Extensions.AzureFunctions;
+using DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights;
 using FunctionApp6;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore;
@@ -239,6 +240,7 @@ namespace FunctionApp6
 
         public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env)
         {
+            app.AddFastAndDependencySampler();
             var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
             app.UseSerilogRequestLogging(); // <-- Add this line
             //config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastRequests(next));
