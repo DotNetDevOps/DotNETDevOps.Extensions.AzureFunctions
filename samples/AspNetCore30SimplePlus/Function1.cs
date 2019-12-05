@@ -15,6 +15,23 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AspNetCore30SimplePlus
 {
+    [ApiController]
+    public class ValuesController : ControllerBase
+    {
+        private readonly ILogger<ValuesController> logger;
+
+        public ValuesController(ILogger<ValuesController> logger)
+        {
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+        [HttpGet("values")]        
+        public async Task<IActionResult> GetValues()
+        {
+            logger.LogInformation("Values Provided");
+            return Ok(new { value = 1 });
+        }
+    }
+
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
