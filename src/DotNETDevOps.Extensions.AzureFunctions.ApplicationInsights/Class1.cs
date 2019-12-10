@@ -1,6 +1,7 @@
 ﻿using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.Reflection;
 
 namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 {
@@ -117,6 +119,47 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
             _next.Process(item);
         }
     }
+    public static class RequestExtensiosn
+    {
+        
+        public static RequestTelemetry ToRequestTelemetry(this TraceTelemetry trace)
+        {
+            return new RequestTelemetry().FromTraceTelemetry(trace);
+        }
+        public static RequestTelemetry FromTraceTelemetry(this RequestTelemetry request, TraceTelemetry trace)
+        {
+
+            request.Context.ReadFrom(trace.Context);
+            typeof(RequestTelemetry)
+   .GetField("context", BindingFlags.Instance | BindingFlags.NonPublic)
+   .SetValue(request, trace.Context);
+          //  typeof().GetProperty("Context").SetValue(request, trace.Context);
+            return request;
+        }
+        public static void ReadFrom(this TelemetryContext target, TelemetryContext source)
+        {
+            target.Operation.ReadFrom(source.Operation);
+            target.Location.Ip = source.Location.Ip;
+            target.Session.Id = source.Session.Id;
+            target.Session.IsFirst = source.Session.IsFirst;
+            target.User.ReadFrom(source.User);
+        }
+        public static void ReadFrom(this OperationContext target, OperationContext source)
+        {
+            target.Id = source.Id;
+            target.ParentId = source.ParentId;
+            target.Name = source.Name;
+            target.SyntheticSource = source.SyntheticSource;
+        }
+        public static void ReadFrom(this UserContext target, UserContext source)
+        {
+            target.Id = source.Id;
+            target.AccountId = source.AccountId;
+            target.AuthenticatedUserId = source.AuthenticatedUserId;
+            target.UserAgent = source.UserAgent;
+            
+        }
+    }
     public class AggressivelySampleFastRequests : ITelemetryProcessor
     {
         private ITelemetryProcessor _next;
@@ -141,6 +184,19 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
         {
             if (item is TraceTelemetry trace && trace.Properties.ContainsKey("SourceContext") && trace.Properties["SourceContext"] == RequestLoggingMiddleware)
             {
+              //  var requestMap = trace.ToRequestTelemetry();
+              //  requestMap.Duration = TimeSpan.FromMilliseconds(double.Parse(trace.Properties["Elapsed"]));
+              //  requestMap.ResponseCode = trace.Properties["StatusCode"];
+              //  requestMap.Success = int.Parse(requestMap.ResponseCode) < 400;
+              //  requestMap.Name = trace.Properties["RequestMethod"] + " " + trace.Properties["RequestPath"];
+              //  item = requestMap;
+              //  item.Timestamp = trace.Timestamp;
+                
+              ////  requestMap.ItemTypeFlag = SamplingTelemetryItemTypes.Request;
+              //  _next.Process(item);
+              //  return;
+
+
                 //HMM could i change it to a request?
                 //https://github.com/microsoft/ApplicationInsights-aspnetcore/blob/a135f1f7d9da7beb11f9bcf20a30f7e779b739f2/NETCORE/src/Microsoft.ApplicationInsights.AspNetCore/DiagnosticListeners/Implementation/HostingDiagnosticListener.cs#L727
 

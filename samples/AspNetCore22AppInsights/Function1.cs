@@ -201,18 +201,18 @@ namespace FunctionApp6
         }
     }
 
-    public class Function1
-    {
-        public Function1(TelemetryConfiguration telemetryConfiguration)
-        {
+    //public class Function1
+    //{
+    //    public Function1(TelemetryConfiguration telemetryConfiguration)
+    //    {
 
-        }
-        [FunctionName("Function1")]
-        public void Run([TimerTrigger("0 */5 * * * *", RunOnStartup =true  )]TimerInfo myTimer, ILogger log)
-        {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
-        }
-    }
+    //    }
+    //    [FunctionName("Function1")]
+    //    public void Run([TimerTrigger("0 */5 * * * *", RunOnStartup =true  )]TimerInfo myTimer, ILogger log)
+    //    {
+    //        log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+    //    }
+    //}
     public class test : IApplicationIdProvider
     {
         public bool TryGetApplicationId(string instrumentationKey, out string applicationId)
@@ -256,7 +256,8 @@ namespace FunctionApp6
             });
             app.Run(async ctx =>
             {
-                ctx.Response.WriteAsync("Hello world");
+                ctx.RequestServices.GetService<ILogger<Startup>>().LogWarning("TEST");
+                await ctx.Response.WriteAsync("Hello world");
                 
             });
         
