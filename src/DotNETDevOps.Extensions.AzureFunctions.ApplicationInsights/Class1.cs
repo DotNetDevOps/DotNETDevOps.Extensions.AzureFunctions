@@ -15,16 +15,61 @@ using System.Reflection;
 
 namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 {
-    internal class StartupFilter : IStartupFilter
+    //internal class StartupFilter : IStartupFilter
+    //{
+    //    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+    //    {
+
+    //        return app =>
+    //        {
+    //            app.AddFastAndDependencySampler();
+    //            app.UseSerilogRequestLogging();
+    //            next(app);
+    //        };
+    //    }
+    //}
+    public class FixNameProcessor : ITelemetryProcessor
+    {
+        private ITelemetryProcessor _next;
+
+        public FixNameProcessor(ITelemetryProcessor next)
+        {
+            // Next TelemetryProcessor in the chain
+            _next = next;
+
+
+        }
+
+        public void Process(ITelemetry item)
+        {
+            if (item is RequestTelemetry request)
+            {
+                request.Name = $"{request.Properties["HttpMethod"]} {request.Properties["HttpPath"]}";
+                request.Context.Operation.Name = request.Name;
+                //request.Context.Operation.Name=
+            }
+
+            // Send the item to the next TelemetryProcessor
+            _next.Process(item);
+        }
+    }
+    public class TelemetryStartupFilter : IStartupFilter
     {
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
         {
 
-            return app =>
+            return builder =>
             {
-                app.AddFastAndDependencySampler();
-                app.UseSerilogRequestLogging();
-                next(app);
+
+
+                next(builder);
+
+                var config = builder.ApplicationServices.GetService<TelemetryConfiguration>();
+                if (config != null)
+                {
+                    config.TelemetryProcessorChainBuilder.Use(n => new FixNameProcessor(n));
+                    config.TelemetryProcessorChainBuilder.Build();
+                }
             };
         }
     }
@@ -61,9 +106,9 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 
             builder.ConfigureServices(services =>
             {
-               services.AddSingleton<IStartupFilter, StartupFilter>();
+            //   services.AddSingleton<IStartupFilter, StartupFilter>();
             });
-
+            builder.ConfigureServices(s => s.AddSingleton<IStartupFilter, TelemetryStartupFilter>());
         }
     }
 

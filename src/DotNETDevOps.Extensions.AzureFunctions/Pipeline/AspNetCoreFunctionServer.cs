@@ -104,8 +104,8 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             {
                 builderExtension.ConfigureWebHostBuilder(executionContext, builder, serviceProvider);
             }
-              
-          
+
+         
             builder.UseStartup(aspNetCoreRunnerAttribute.Startup);
 
 

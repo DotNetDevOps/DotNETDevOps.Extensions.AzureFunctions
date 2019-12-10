@@ -17,6 +17,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         public async Task ExecuteResultAsync(ActionContext context)
         {
             context.HttpContext.Features.Set<IServiceProvidersFeature>(null);
+            
 
             var application = await this.server.GetApplicationAsync();
            
