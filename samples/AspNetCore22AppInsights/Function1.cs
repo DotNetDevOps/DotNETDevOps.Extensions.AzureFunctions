@@ -80,7 +80,7 @@ namespace FunctionApp6
 
 
             builder.Services.AddSingleton<IWebHostBuilderExtension<Startup>, WebBuilderExtension>();
-           // builder.Services.AddTransient<ITelemetryProcessor, AggressivelySampleFastRequests>();
+            builder.Services.AddTransient<ITelemetryProcessor, AggressivelySampleFastRequests>();
         }
     }
 
@@ -123,7 +123,31 @@ namespace FunctionApp6
 
         }
     }
+   
+    public class FixNameProcessor : ITelemetryProcessor
+    {
+        private ITelemetryProcessor _next;
+        
+        public FixNameProcessor(ITelemetryProcessor next)
+        {
+            // Next TelemetryProcessor in the chain
+            _next = next;
+         
 
+        }
+
+        public void Process(ITelemetry item)
+        {
+            if (item is RequestTelemetry request)
+            {
+                request.Name = $"{request.Properties["HttpMethod"]} {request.Properties["HttpPath"]}";
+                //request.Context.Operation.Name=
+            }
+
+            // Send the item to the next TelemetryProcessor
+            _next.Process(item);
+        }
+    }
 
     public class AggressivelySampleFastRequests : ITelemetryProcessor
     {
@@ -240,12 +264,12 @@ namespace FunctionApp6
 
         public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env)
         {
-            app.AddFastAndDependencySampler();
+           // app.AddFastAndDependencySampler();
             var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
-            app.UseSerilogRequestLogging(); // <-- Add this line
-            //config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastRequests(next));
-            //config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
-            //config.TelemetryProcessorChainBuilder.Build();
+        //    app.UseSerilogRequestLogging(); // <-- Add this line
+            config.TelemetryProcessorChainBuilder.Use(next => new FixNameProcessor(next));
+          //  config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
+            config.TelemetryProcessorChainBuilder.Build();
 
             app.Map("/api/test", builderinner => {
                 builderinner.Use((ctx,next) => {
@@ -256,6 +280,8 @@ namespace FunctionApp6
             });
             app.Run(async ctx =>
             {
+                var a = ctx.Features.Get<RequestTelemetry>();
+                a.Name = ctx.Request.Method + " " + ctx.Request.Path;
                 ctx.RequestServices.GetService<ILogger<Startup>>().LogWarning("TEST");
                 await ctx.Response.WriteAsync("Hello world");
                 
