@@ -48,6 +48,7 @@ namespace AspNetCore30SimplePlus
             app.Run(r => r.Response.WriteAsync("HELLO WORLD"));
         }
     }
+   
     public class ServerlessAspNetCore
     {
         [FunctionName("AspNetCoreHost")]
