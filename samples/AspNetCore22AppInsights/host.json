@@ -1,11 +1,18 @@
 {
   "version": "2.0",
   "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "maxTelemetryItemsPerSecond": 1
+      }
+    },
+    "fileLoggingMode": "always",
     "logLevel": {
-      "Host.Results": "Trace",
+      "default": "Warning",
+      "Host.Result": "Information",
       "Function": "Warning",
-      "Host.Aggregator": "Trace",
-      "Host.Bindings": "Warning"
+      "Host.Aggreator": "Trace"
     }
   }
 }
