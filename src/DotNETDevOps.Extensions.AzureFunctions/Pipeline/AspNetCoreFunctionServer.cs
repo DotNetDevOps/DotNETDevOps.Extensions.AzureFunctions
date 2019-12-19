@@ -9,6 +9,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.WebJobs.Host.Config;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+using Microsoft.Azure.WebJobs;
 
 namespace DotNETDevOps.Extensions.AzureFunctions
 {
@@ -36,19 +39,28 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
             var builder = new WebHostBuilder(); 
 
+            
             builder.ConfigureServices(services =>
             {
+                var tctype = Type.GetType("Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration, Microsoft.ApplicationInsights");
+                if (tctype!=null) {
+                    var tc = serviceProvider.GetService(tctype);
+                    if(tc!=null)
+                    services.AddSingleton(tctype, tc);
+                }
+              
                 services.AddSingleton(executionContext);
                 services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
 
-                var type = Type.GetType("Microsoft.Azure.WebJobs.OrchestrationClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                var type = Type.GetType("Microsoft.Azure.WebJobs.OrchestrationClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask") ??
+                    Type.GetType("Microsoft.Azure.WebJobs.DurableClientAttribute, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                 if (type != null)
                 {
                     var clientType = Type.GetType("Microsoft.Azure.WebJobs.DurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                     var iClientType = Type.GetType("Microsoft.Azure.WebJobs.IDurableOrchestrationClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                     var extensionType = Type.GetType("Microsoft.Azure.WebJobs.Extensions.DurableTask.DurableTaskExtension, Microsoft.Azure.WebJobs.Extensions.DurableTask");
-
-
+                    var IDurableEntityClientType = Type.GetType("Microsoft.Azure.WebJobs.IDurableEntityClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
+                    var IDurableClientType =  Type.GetType("Microsoft.Azure.WebJobs.IDurableClient, Microsoft.Azure.WebJobs.Extensions.DurableTask");
                     services.AddSingleton(type);
 
                     if (clientType!=null)
@@ -60,25 +72,40 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                         RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, iClientType, extensionType);
                         
                     }
+                    if (IDurableEntityClientType != null)
+                    {
+                        RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, IDurableEntityClientType, extensionType);
 
+                    }
 
+                    if (IDurableClientType != null)
+                    {
+                        RegisterDurableClient(aspNetCoreRunnerAttribute, serviceProvider, services, type, IDurableClientType, extensionType);
+
+                    }
 
 
                 }
 
             });
-
+     
             builder.UseContentRoot(executionContext.FunctionAppDirectory);
-
+            builder.ConfigureAppConfiguration((c, cbuilder) => { cbuilder
+                .AddInMemoryCollection(new Dictionary<string, string> {
+                    ["ExecutionContext:FunctionName"] = executionContext.FunctionName,
+                    ["ExecutionContext:FunctionAppDirectory"] = executionContext.FunctionAppDirectory,
+                    ["ExecutionContext:FunctionDirectory"] = executionContext.FunctionDirectory
+                })
+                .AddConfiguration(serviceProvider.GetService<IConfiguration>()); });
 
             var builderExtension = serviceProvider.GetService(typeof(IWebHostBuilderExtension<>).MakeGenericType(aspNetCoreRunnerAttribute.Startup)) as IBuilderExtension;
 
             if (builderExtension != null)
             {
-                builderExtension.ConfigureWebHostBuilder(executionContext, builder);
+                builderExtension.ConfigureWebHostBuilder(executionContext, builder, serviceProvider);
             }
-              
 
+         
             builder.UseStartup(aspNetCoreRunnerAttribute.Startup);
 
 

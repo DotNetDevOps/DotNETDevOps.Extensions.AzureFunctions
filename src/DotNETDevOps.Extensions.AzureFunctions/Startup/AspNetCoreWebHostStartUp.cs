@@ -10,7 +10,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         where TWebHostBuilder : class,IWebHostBuilderExtension<TStartup>
       
     {
-        public void Configure(IWebJobsBuilder builder)
+        public virtual   void Configure(IWebJobsBuilder builder)
         {
             builder.Services.AddTransient<IWebHostBuilderExtension<TStartup>,TWebHostBuilder>();
         }
