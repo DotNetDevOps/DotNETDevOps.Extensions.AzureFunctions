@@ -69,7 +69,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             var genericbuilder = Host.CreateDefaultBuilder().ConfigureWebHost(builder =>
             {  // new WebHostBuilder(); 
 
-
+                
 
                 builder.ConfigureServices(services =>
                 {
@@ -82,8 +82,14 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                     }
                     services.AddSingleton(executionContext);
                     services.AddSingleton<IStartupFilter, HttpContextAccessorStartupFilter>();
-
-
+                    var t = serviceProvider.GetService<TeleetryConfigurationProvider>();
+                    services.AddSingleton(t);
+                    if(t.serviceType != null)
+                    {
+                        var tc = serviceProvider.GetService(t.serviceType);
+                        if(tc!=null)
+                            services.AddSingleton(t.serviceType, tc);
+                    }
 
                 });
 
