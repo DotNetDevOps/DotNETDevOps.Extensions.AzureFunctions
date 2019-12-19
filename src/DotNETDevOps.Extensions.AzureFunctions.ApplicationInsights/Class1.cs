@@ -47,7 +47,6 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
             {
                 request.Name = $"{request.Properties["HttpMethod"]} {request.Properties["HttpPath"]}";
                 request.Context.Operation.Name = request.Name;
-                //request.Context.Operation.Name=
             }
 
             // Send the item to the next TelemetryProcessor

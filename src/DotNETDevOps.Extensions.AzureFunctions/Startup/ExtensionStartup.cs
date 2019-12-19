@@ -32,10 +32,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
                 var chain = serviceType.GetProperty("TelemetryProcessorChainBuilder").GetValue(tc);
                 var ITelemetryProcessor = serviceType.Assembly.GetType("Microsoft.ApplicationInsights.Extensibility.ITelemetryProcessor");
-                var funcType = typeof(Func<,>).MakeGenericType(ITelemetryProcessor, ITelemetryProcessor);
-                var methodInfo = this.GetType().GetMethod("Test").MakeGenericMethod(ITelemetryProcessor);
-
-
+                 
                 //  var func = Delegate.CreateDelegate(funcType, methodInfo);
                 // var f = (object o) => methodInfo.Invoke(this, new[] { o });
                 chain.GetType().GetMethod("Use").Invoke(chain, new object[] { this.GetType().GetMethod("GetMethod").MakeGenericMethod(ITelemetryProcessor).Invoke(this, null) });
