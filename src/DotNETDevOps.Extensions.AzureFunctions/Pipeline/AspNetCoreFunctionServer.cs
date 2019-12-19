@@ -73,6 +73,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
 
                 builder.ConfigureServices(services =>
                 {
+                    services.AddRouting();
                     var tctype = Type.GetType("Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration, Microsoft.ApplicationInsights");
                     if (tctype != null)
                     {
