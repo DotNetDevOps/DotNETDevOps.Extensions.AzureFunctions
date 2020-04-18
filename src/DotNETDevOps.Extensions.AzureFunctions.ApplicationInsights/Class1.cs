@@ -47,6 +47,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
             {
                 request.Name = $"{request.Properties["HttpMethod"]} {request.Properties["HttpPath"]}";
                 request.Context.Operation.Name = request.Name;
+                request.Success = int.TryParse( request.ResponseCode,out var statuscode) && statuscode < 400;
             }
 
             // Send the item to the next TelemetryProcessor

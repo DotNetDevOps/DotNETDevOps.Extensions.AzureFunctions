@@ -58,6 +58,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions
               //  var Properties = o.GetType().GetProperty("Properties").GetValue(o) as IDictionary<string,string>;
                 request.Name = $"{request.Properties["HttpMethod"]} {request.Properties["HttpPath"]}";
                 request.Context.Operation.Name = request.Name;
+                request.Success = int.TryParse(request.ResponseCode as string, out var statuscode) && statuscode < 400;
             }
         }
         private  TypeBuilder GetTypeBuilder(string name)

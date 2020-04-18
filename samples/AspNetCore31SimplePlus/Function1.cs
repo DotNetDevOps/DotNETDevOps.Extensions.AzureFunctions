@@ -45,7 +45,11 @@ namespace AspNetCore30SimplePlus
 
             });
 
-            app.Run(r => r.Response.WriteAsync("HELLO WORLD"));
+            app.Run(r =>
+            {
+                r.Response.StatusCode = 502;
+                return r.Response.WriteAsync("HELLO WORLD");
+            });
         }
     }
    
