@@ -5,6 +5,7 @@ using Microsoft.ApplicationInsights.Extensibility.Implementation;
 //using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
 {
@@ -29,6 +31,7 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
     //        };
     //    }
     //}
+   
     public class FixNameProcessor : ITelemetryProcessor
     {
         private ITelemetryProcessor _next;
@@ -45,9 +48,11 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
         {
             if (item is RequestTelemetry request)
             {
-                request.Name = $"{request.Properties["HttpMethod"]} {request.Properties["HttpPath"]}";
+                
+                request.Name = $"{request.Properties["HttpMethod"]} {(request.Properties.TryGetValue("HttpPathBase", out var pathbase)?pathbase:"")}{request.Properties["HttpPath"]}";
                 request.Context.Operation.Name = request.Name;
                 request.Success = int.TryParse( request.ResponseCode,out var statuscode) && statuscode < 400;
+                
             }
 
             // Send the item to the next TelemetryProcessor

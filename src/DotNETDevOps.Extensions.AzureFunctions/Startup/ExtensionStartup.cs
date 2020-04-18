@@ -55,11 +55,16 @@ namespace DotNETDevOps.Extensions.AzureFunctions
         {
             if(request.GetType().Name == "RequestTelemetry")
             {
-              //  var Properties = o.GetType().GetProperty("Properties").GetValue(o) as IDictionary<string,string>;
-                request.Name = $"{request.Properties["HttpMethod"]} {request.Properties["HttpPath"]}";
+                //  var Properties = o.GetType().GetProperty("Properties").GetValue(o) as IDictionary<string,string>;
+                request.Name = $"{request.Properties["HttpMethod"]} {(request.Properties.TryGetValue("HttpPathBase", out string pathbase) ? pathbase : "")}{request.Properties["HttpPath"]}";
                 request.Context.Operation.Name = request.Name;
                 request.Success = int.TryParse(request.ResponseCode as string, out var statuscode) && statuscode < 400;
             }
+        }
+        public Type GetRequestTelemetryType()
+        {
+            return serviceType.Assembly.GetType("Microsoft.ApplicationInsights.DataContracts.RequestTelemetry");
+             
         }
         private  TypeBuilder GetTypeBuilder(string name)
         {
