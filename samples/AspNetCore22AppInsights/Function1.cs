@@ -6,12 +6,10 @@ using DotNETDevOps.Extensions.AzureFunctions;
 using DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights;
 using FunctionApp6;
 using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.AspNetCore;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
-using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel;
+//using Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -32,41 +30,45 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace FunctionApp6
 {
 
-    public static class ApplicationInsightsExtensions
-    {
-        public static void AddDependencyTelemetrySamplingProcessor(this IWebJobsBuilder builder, int percentage = 100)
-        {
-            var tctype = Type.GetType("Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration, Microsoft.ApplicationInsights");
-            if (tctype != null)
-            {
-                var configDescriptor = builder.Services.SingleOrDefault(tc => tc.ServiceType == tctype);
-                if (configDescriptor?.ImplementationFactory != null)
-                {
-                    var implFactory = configDescriptor.ImplementationFactory;
-                    builder.Services.Remove(configDescriptor);
-                    builder.Services.AddSingleton(provider =>
-                    {
-                        if (implFactory.Invoke(provider) is TelemetryConfiguration config)
-                        {
-                            config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastRequests(next));
-                            config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
-                            config.TelemetryProcessorChainBuilder.Build();
-                            return config;
-                        }
-                        return null;
-                    });
-                }
-            }
-        }
-    }
+    //public static class ApplicationInsightsExtensions
+    //{
+    //    public static void AddDependencyTelemetrySamplingProcessor(this IWebJobsBuilder builder, int percentage = 100)
+    //    {
+    //        var tctype = Type.GetType("Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration, Microsoft.ApplicationInsights");
+    //        if (tctype != null)
+    //        {
+    //            var configDescriptor = builder.Services.SingleOrDefault(tc => tc.ServiceType == tctype);
+    //            if (configDescriptor?.ImplementationFactory != null)
+    //            {
+    //                var implFactory = configDescriptor.ImplementationFactory;
+    //                builder.Services.Remove(configDescriptor);
+    //                builder.Services.AddSingleton(provider =>
+    //                {
+    //                    if (implFactory.Invoke(provider) is TelemetryConfiguration config)
+    //                    {
+    //                        config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastRequests(next));
+    //                        config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
+    //                        config.TelemetryProcessorChainBuilder.Build();
+    //                        return config;
+    //                    }
+    //                    return null;
+    //                });
+    //            }
+    //        }
+    //    }
+    //}
     public class WebJobStartup : IWebJobsStartup
     {
+       // public static Type TelemetryConfigurationType { get; set; }
+
         //https://github.com/Azure/azure-functions-host/issues/3741
         public void Configure(IWebJobsBuilder builder)
         {
+          //  TelemetryConfigurationType = builder.Services.FirstOrDefault(t => t.ServiceType.Name.Contains("TelemetryConfiguration")).ServiceType;
+
             //  builder.AddDependencyTelemetrySamplingProcessor();
-          
-            
+
+
             //builder.Services.AddSingleton<ITelemetryModule>(provider =>
             //{
             //    var options = provider.GetRequiredService<IOptions<ApplicationInsightsServiceOptions>>().Value;
@@ -78,9 +80,9 @@ namespace FunctionApp6
             //});
 
 
-
+          //  builder.Services.AddSingleton<IStartupFilter, TelemetryStartupFilter>();
             builder.Services.AddSingleton<IWebHostBuilderExtension<Startup>, WebBuilderExtension>();
-            builder.Services.AddTransient<ITelemetryProcessor, AggressivelySampleFastRequests>();
+         
         }
     }
 
@@ -88,14 +90,15 @@ namespace FunctionApp6
     {
         
 
-        public void ConfigureWebHostBuilder(ExecutionContext executionContext, WebHostBuilder builder, IServiceProvider serviceProvider)
+        public void ConfigureWebHostBuilder(ExecutionContext executionContext, IWebHostBuilder builder, IServiceProvider serviceProvider)
         {
 
             builder.UseSerilog((context,configuration)=>
             {
-
-                configuration.WriteTo
-                    .ApplicationInsights(serviceProvider.GetService<TelemetryConfiguration>(), TelemetryConverter.Traces);
+                var test = serviceProvider.GetService<TelemetryConfiguration>();
+                //var test2= serviceProvider.GetService( serviceProvider.GetService<TeleetryConfigurationProvider>().;
+              //  configuration.WriteTo
+              //      .ApplicationInsights(test, TelemetryConverter.Traces);
             });
             //var config = serviceProvider.GetService<TelemetryConfiguration>();
             //var modules = serviceProvider.GetService<IEnumerable<ITelemetryModule>>();
@@ -106,7 +109,7 @@ namespace FunctionApp6
 
             builder.ConfigureServices(collection =>
             {
-
+               // collection.AddSingleton<IStartupFilter, TelemetryStartupFilter>();
                 //THIS IS DONE BY FRAMEWORK Automatically
 
                 //var tc = serviceProvider.GetService<TelemetryConfiguration>(); if (tc != null)
@@ -115,7 +118,7 @@ namespace FunctionApp6
                 //}
 
 
-                
+
 
 
             });
@@ -124,106 +127,83 @@ namespace FunctionApp6
         }
     }
    
-    public class FixNameProcessor : ITelemetryProcessor
-    {
-        private ITelemetryProcessor _next;
-        
-        public FixNameProcessor(ITelemetryProcessor next)
-        {
-            // Next TelemetryProcessor in the chain
-            _next = next;
-         
+    
 
-        }
+    //public class AggressivelySampleFastRequests : ITelemetryProcessor
+    //{
+    //    private ITelemetryProcessor _next;
+    //    private readonly AdaptiveSamplingTelemetryProcessor samplingProcessor;
+    //    public AggressivelySampleFastRequests(ITelemetryProcessor next)
+    //    {
+    //        // Next TelemetryProcessor in the chain
+    //        _next = next;
+    //        this.samplingProcessor = new AdaptiveSamplingTelemetryProcessor(next)
+    //        {
+    //            ExcludedTypes = "Event", // exclude custom events from being sampled
+    //            MaxTelemetryItemsPerSecond = 1, // default: 5 calls/sec
+    //            SamplingPercentageIncreaseTimeout = TimeSpan.FromSeconds(1), // default: 2 min
+    //            SamplingPercentageDecreaseTimeout = TimeSpan.FromSeconds(1), // default: 30 sec
+    //            EvaluationInterval = TimeSpan.FromSeconds(1), // default: 15 sec
+    //            InitialSamplingPercentage = 25, // default: 100%
+    //        };
 
-        public void Process(ITelemetry item)
-        {
-            if (item is RequestTelemetry request)
-            {
-                request.Name = $"{request.Properties["HttpMethod"]} {request.Properties["HttpPath"]}";
-                //request.Context.Operation.Name=
-            }
+    //    }
 
-            // Send the item to the next TelemetryProcessor
-            _next.Process(item);
-        }
-    }
-
-    public class AggressivelySampleFastRequests : ITelemetryProcessor
-    {
-        private ITelemetryProcessor _next;
-        private readonly AdaptiveSamplingTelemetryProcessor samplingProcessor;
-        public AggressivelySampleFastRequests(ITelemetryProcessor next)
-        {
-            // Next TelemetryProcessor in the chain
-            _next = next;
-            this.samplingProcessor = new AdaptiveSamplingTelemetryProcessor(next)
-            {
-                ExcludedTypes = "Event", // exclude custom events from being sampled
-                MaxTelemetryItemsPerSecond = 1, // default: 5 calls/sec
-                SamplingPercentageIncreaseTimeout = TimeSpan.FromSeconds(1), // default: 2 min
-                SamplingPercentageDecreaseTimeout = TimeSpan.FromSeconds(1), // default: 30 sec
-                EvaluationInterval = TimeSpan.FromSeconds(1), // default: 15 sec
-                InitialSamplingPercentage = 25, // default: 100%
-            };
-
-        }
-
-        public void Process(ITelemetry item)
-        {
-            if (item is RequestTelemetry request)
-            {
-                if (request.Duration < TimeSpan.FromMilliseconds(500) || request.ResponseCode == "200")
-                {
-                    // let sampling processor decide what to do
-                    // with this fast incoming request
-                    this.samplingProcessor.Process(item);
-                    return;
-                }
+    //    public void Process(ITelemetry item)
+    //    {
+    //        if (item is RequestTelemetry request)
+    //        {
+    //            if (request.Duration < TimeSpan.FromMilliseconds(500) || request.ResponseCode == "200")
+    //            {
+    //                // let sampling processor decide what to do
+    //                // with this fast incoming request
+    //                this.samplingProcessor.Process(item);
+    //                return;
+    //            }
 
                
-            }
+    //        }
              
-            // Send the item to the next TelemetryProcessor
-            _next.Process(item);
-        }
-    }
-    public class AggressivelySampleFastDependencies : ITelemetryProcessor
-    {
-        private ITelemetryProcessor _next;
-        private readonly AdaptiveSamplingTelemetryProcessor samplingProcessor;
-        public AggressivelySampleFastDependencies(ITelemetryProcessor next)
-        {
-            // Next TelemetryProcessor in the chain
-            _next = next;
-            this.samplingProcessor = new AdaptiveSamplingTelemetryProcessor(next)
-            {
-                ExcludedTypes = "Event", // exclude custom events from being sampled
-                MaxTelemetryItemsPerSecond = 1, // default: 5 calls/sec
-                SamplingPercentageIncreaseTimeout = TimeSpan.FromSeconds(1), // default: 2 min
-                SamplingPercentageDecreaseTimeout = TimeSpan.FromSeconds(1), // default: 30 sec
-                EvaluationInterval = TimeSpan.FromSeconds(1), // default: 15 sec
-                InitialSamplingPercentage = 25, // default: 100%
-            };
+    //        // Send the item to the next TelemetryProcessor
+    //        _next.Process(item);
+    //    }
+    //}
+    //public class AggressivelySampleFastDependencies : ITelemetryProcessor
+    //{
+    //    private ITelemetryProcessor _next;
+    //    private readonly AdaptiveSamplingTelemetryProcessor samplingProcessor;
+    //    public AggressivelySampleFastDependencies(ITelemetryProcessor next)
+    //    {
+    //        // Next TelemetryProcessor in the chain
+    //        _next = next;
+    //        this.samplingProcessor = new AdaptiveSamplingTelemetryProcessor(next)
+    //        {
+    //            ExcludedTypes = "Event", // exclude custom events from being sampled
+    //            MaxTelemetryItemsPerSecond = 1, // default: 5 calls/sec
+    //            SamplingPercentageIncreaseTimeout = TimeSpan.FromSeconds(1), // default: 2 min
+    //            SamplingPercentageDecreaseTimeout = TimeSpan.FromSeconds(1), // default: 30 sec
+    //            EvaluationInterval = TimeSpan.FromSeconds(1), // default: 15 sec
+    //            InitialSamplingPercentage = 25, // default: 100%
+    //        };
 
-        }
+    //    }
 
-        public void Process(ITelemetry item)
-        {
+    //    public void Process(ITelemetry item)
+    //    {
             
-            if (item is DependencyTelemetry dependency)
-            {
-                if (dependency.Duration.TotalMilliseconds < 100)
-                {
-                    this.samplingProcessor.Process(item);
-                    return;
-                }
-            }
+    //        if (item is DependencyTelemetry dependency)
+    //        {
+    //            if (dependency.Duration.TotalMilliseconds < 100)
+    //            {
+    //                this.samplingProcessor.Process(item);
+    //                return;
+    //            }
+    //        }
 
-            // Send the item to the next TelemetryProcessor
-            _next.Process(item);
-        }
-    }
+    //        // Send the item to the next TelemetryProcessor
+    //        _next.Process(item);
+    //    }
+    //}
 
     //public class Function1
     //{
@@ -237,14 +217,14 @@ namespace FunctionApp6
     //        log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
     //    }
     //}
-    public class test : IApplicationIdProvider
-    {
-        public bool TryGetApplicationId(string instrumentationKey, out string applicationId)
-        {
-            applicationId = "adsad";
-            return true;
-        }
-    }
+    //public class test : IApplicationIdProvider
+    //{
+    //    public bool TryGetApplicationId(string instrumentationKey, out string applicationId)
+    //    {
+    //        applicationId = "adsad";
+    //        return true;
+    //    }
+    //}
     public class Startup
     {
         private readonly IConfiguration configuration;
@@ -262,14 +242,14 @@ namespace FunctionApp6
              
         }
 
-        public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, Microsoft.Extensions.Hosting.IHostEnvironment env)
         {
            // app.AddFastAndDependencySampler();
-            var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
+         //   var config = app.ApplicationServices.GetService<TelemetryConfiguration>();
         //    app.UseSerilogRequestLogging(); // <-- Add this line
-            config.TelemetryProcessorChainBuilder.Use(next => new FixNameProcessor(next));
+         //   config.TelemetryProcessorChainBuilder.Use(next => new FixNameProcessor(next));
           //  config.TelemetryProcessorChainBuilder.Use(next => new AggressivelySampleFastDependencies(next));
-            config.TelemetryProcessorChainBuilder.Build();
+       //     config.TelemetryProcessorChainBuilder.Build();
 
             app.Map("/api/test", builderinner => {
                 builderinner.Use((ctx,next) => {
@@ -280,8 +260,8 @@ namespace FunctionApp6
             });
             app.Run(async ctx =>
             {
-                var a = ctx.Features.Get<RequestTelemetry>();
-                a.Name = ctx.Request.Method + " " + ctx.Request.Path;
+               // var a = ctx.Features.Get<RequestTelemetry>();
+               // a.Name = ctx.Request.Method + " " + ctx.Request.Path;
                 ctx.RequestServices.GetService<ILogger<Startup>>().LogWarning("TEST");
                 await ctx.Response.WriteAsync("Hello world");
                 
@@ -292,8 +272,7 @@ namespace FunctionApp6
     }
     public class ServerlessApi
     {
-
-
+       
         [FunctionName("AspNetCoreHost")]
         public Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, Route = "{*all}")]HttpRequest req,

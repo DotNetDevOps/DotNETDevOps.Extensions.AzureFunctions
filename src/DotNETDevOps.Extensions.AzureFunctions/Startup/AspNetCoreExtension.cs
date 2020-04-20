@@ -11,10 +11,12 @@ namespace DotNETDevOps.Extensions.AzureFunctions
     public class AspNetCoreExtension : IExtensionConfigProvider, IAsyncConverter<HttpRequestMessage, HttpResponseMessage>
     {
         private readonly IServiceProvider serviceProvider;
+        private readonly TeleetryConfigurationProvider teleetryConfiguration;
 
-        public AspNetCoreExtension(IServiceProvider serviceProvider)
+        public AspNetCoreExtension(IServiceProvider serviceProvider, TeleetryConfigurationProvider teleetryConfiguration)
         {
             this.serviceProvider = serviceProvider;
+            this.teleetryConfiguration = teleetryConfiguration;
         }
         public void Initialize(ExtensionConfigContext context)
         {
@@ -23,6 +25,8 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             rule.BindToInput(Factory);
 
             uri = context.GetWebhookHandler();
+
+            teleetryConfiguration.Initialize(serviceProvider);
         }
 
         private Task<IAspNetCoreRunner> Factory(AspNetCoreRunnerAttribute arg1, ValueBindingContext arg2)
