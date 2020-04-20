@@ -51,14 +51,34 @@ namespace DotNETDevOps.Extensions.AzureFunctions
             
             return (T)Activator.CreateInstance(t, new object[] { (T)arg });
         }
+
+        private static T GetOrKeep<T>(T defaultValue, IDictionary<string, string> properties, string v, Func<string, T> converter)
+        {
+            if (properties.ContainsKey(v))
+            {
+                var vlue = properties[v];
+                properties.Remove(v);
+                return converter(vlue);
+            }
+            return defaultValue;
+
+        }
         public static void FixRequest(dynamic request)
         {
             if(request.GetType().Name == "RequestTelemetry")
             {
+                var properties = request.Properties as IDictionary<string, string>;
+                
                 //  var Properties = o.GetType().GetProperty("Properties").GetValue(o) as IDictionary<string,string>;
                 request.Name = $"{request.Properties["HttpMethod"]} {(request.Properties.TryGetValue("HttpPathBase", out string pathbase) ? pathbase : "")}{request.Properties["HttpPath"]}";
                 request.Context.Operation.Name = request.Name;
                 request.Success = int.TryParse(request.ResponseCode as string, out var statuscode) && statuscode < 400;
+
+                request.Url = GetOrKeep(request.Url as Uri, properties, "DisplayUrl", c => new Uri(c));
+
+
+                
+
             }
         }
         public Type GetRequestTelemetryType()

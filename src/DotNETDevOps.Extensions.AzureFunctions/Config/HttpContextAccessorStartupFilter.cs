@@ -48,16 +48,25 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                         {
                             var propertiesInfo = request.GetType().GetProperty("Properties");
                             var properties = propertiesInfo.GetValue(request) as IDictionary<string, string>;
-                            properties["HttpPathBase"] = ctx.Request.PathBase;
+                            properties["HttpPathBase"] = ctx.Request.PathBase.Value ?? string.Empty;
+                            properties["HttpPath"] = ctx.Request.Path.Value ?? "/";
+
                             var url = new Uri(ctx.Request.GetDisplayUrl());
                             properties["DisplayUrl"] = url.AbsoluteUri;
                             properties["DisplayHost"] = url.Host;
 
+                             
+                            RmoveIfExists(properties, "TriggerReason");
+                            RmoveIfExists(properties, "FullName");
 
                             foreach (var header in ctx.Request.Headers)
                             {
                                 properties[header.Key] = string.Join(" ", header.Value).Truncate(80);
                             }
+                            RmoveIfExists(properties, "TriggerReason");
+                            RmoveIfExists(properties, "FullName");
+                            RmoveIfExists(properties, "X-AppService-Proto");
+                            
 
                         }
                     }
@@ -73,6 +82,12 @@ namespace DotNETDevOps.Extensions.AzureFunctions
                
             };
 
+        }
+
+        private static void RmoveIfExists(IDictionary<string, string> properties, string x)
+        {
+            if (properties.ContainsKey(x))
+                properties.Remove(x);
         }
     }
 }

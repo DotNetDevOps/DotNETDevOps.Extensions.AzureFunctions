@@ -13,6 +13,8 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -52,11 +54,41 @@ namespace DotNETDevOps.Extensions.AzureFunctions.ApplicationInsights
                 request.Name = $"{request.Properties["HttpMethod"]} {(request.Properties.TryGetValue("HttpPathBase", out var pathbase)?pathbase:"")}{request.Properties["HttpPath"]}";
                 request.Context.Operation.Name = request.Name;
                 request.Success = int.TryParse( request.ResponseCode,out var statuscode) && statuscode < 400;
-                
+
+                request.Url = GetOrKeep(request.Url, request.Properties, "DisPlayUrl");
+             //   GetAndRemove(request, t => t.Url, "DisplayUrl", str=>new Uri(str)); // request.Properties["DisplayUrl"];
             }
 
             // Send the item to the next TelemetryProcessor
             _next.Process(item);
+        }
+
+        private T GetOrKeep<T>(T defaultValue, IDictionary<string, string> properties, string v, Func<string,T> converter)
+        {
+            if (properties.ContainsKey(v))
+            {
+                var vlue = properties[v];
+                properties.Remove(v);
+                return converter(vlue);
+            }
+            return defaultValue;
+            
+        }
+
+        private void GetAndRemove<P>(RequestTelemetry request, Expression<Func<RequestTelemetry, P>> selector, string v,Func<string,P> converter)
+        {
+            if (request.Properties.ContainsKey(v))
+            {
+                var vlue = request.Properties[v];
+                request.Properties.Remove(v);
+
+                var newValue = converter(vlue);
+                
+                var prop = (PropertyInfo)((MemberExpression)selector.Body).Member;
+                prop.SetValue(request, newValue, null);
+
+            } 
+          
         }
     }
     //public class TelemetryStartupFilter : IStartupFilter
